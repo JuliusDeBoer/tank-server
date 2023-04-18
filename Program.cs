@@ -1,5 +1,4 @@
-﻿using Tanks.Controllers;
-using Tanks.Models;
+﻿using Tanks.Models;
 
 namespace Tanks
 {
@@ -18,7 +17,6 @@ namespace Tanks
             // Configure the HTTP request pipeline.
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
