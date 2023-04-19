@@ -8,8 +8,8 @@ A clone of tank tactics by Halfbrick Studios.
    - [ ] Get board
    - [ ] Get updates from board (Last or something)
  - [ ] Tanks
-   - [ ] Movement
-   - [ ] Shooting
+   - [X] Movement
+   - [X] Shooting (Do this better)
    - [ ] Updating color
  - [ ] Account
    - [ ] Abillity to create an account
