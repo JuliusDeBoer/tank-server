@@ -2,11 +2,10 @@
 {
     public static class Log
     {
-        private const string dateFomrat = "HH:MM:ss:f";
-        public static void Info(string format, params object[] parameters)
+        private const string dateFomrat = "HH:MM:ss:ff";
+        public static void Info(string msg)
         {
             string time = DateTime.Now.ToString(dateFomrat);
-            string msg = string.Format(format, parameters);
 
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.Write($"[{time}]");
@@ -17,10 +16,9 @@
             Console.WriteLine(msg);
         }
 
-        public static void Warn(string format, params object[] parameters)
+        public static void Warn(string msg)
         {
             string time = DateTime.Now.ToString(dateFomrat);
-            string msg = string.Format(format, parameters);
 
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.Write($"[{time}]");
@@ -31,10 +29,9 @@
             Console.WriteLine(msg);
         }
 
-        public static void Error(string format, params object[] parameters)
+        public static void Error(string msg)
         {
             string time = DateTime.Now.ToString(dateFomrat);
-            string msg = string.Format(format, parameters);
 
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.Write($"[{time}]");
