@@ -3,33 +3,27 @@ using Tanks.Models;
 
 namespace Tanks
 {
-    public static class BoardMutex
+    public static class Board
     {
+        private static Dictionary<int, Models.Tank> Dictionary { get; set; } = new Dictionary<int, Models.Tank>();
         private static readonly Mutex _mutex = new();
-        private static Board _board = new();
-        public static Board Board
+        public static Dictionary<int, Models.Tank> Tanks
         {
             get
             {
                 _mutex.WaitOne();
-                Board content = _board;
+                Dictionary<int, Models.Tank> content = Dictionary;
                 _mutex.ReleaseMutex();
                 return content;
             }
             set
             {
                 _mutex.WaitOne();
-                _board = value;
+                Dictionary = value;
                 _mutex.ReleaseMutex();
             }
         }
-    }
-
-    public class Board
-    {
-        public Dictionary<int, Models.Tank> Tanks { get; set; } = new Dictionary<int, Models.Tank>();
-
-        int GetTankByPosition(Models.Position position)
+        public static int GetTankByPosition(Models.Position position)
         {
             foreach (KeyValuePair<int, Tank> pair in Tanks)
             {
