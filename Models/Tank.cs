@@ -92,6 +92,22 @@ namespace Tanks.Models
                 Total = total;
             }
         }
+
+        public static Color? ParseColor(string color)
+        {
+            return color.ToLower() switch
+            {
+                "red" => Color.Red,
+                "orange" => Color.Orange,
+                "yellow" => Color.Yellow,
+                "green" => Color.Green,
+                "blue" => Color.Blue,
+                "purple" => Color.Purple,
+                "white" => Color.White,
+                _ => null
+            };
+        }
+
         public static void MapTankEndpoints(this IEndpointRouteBuilder routes)
         {
             RouteGroupBuilder group = routes.MapGroup("/api/v1/tank");
@@ -99,24 +115,24 @@ namespace Tanks.Models
             group.MapGet("/", () =>
             {
                 Log.Info("Requested all tanks");
-                return BoardMutex.Board.Tanks;
+                return Board.Tanks;
             })
             .WithName("GetAllTanks");
 
             group.MapGet("/{id}", (int id) =>
             {
-                if (!BoardMutex.Board.Tanks.ContainsKey(id))
+                if (!Board.Tanks.ContainsKey(id))
                 {
                     Log.Error($"Attempted to get tank with id: {id}. Which doesn't exist");
                     return (IResult)TypedResults.NotFound(new Response("Tank does not exist"));
                 }
                 Log.Info($"Got tank {id}");
-                return (IResult)TypedResults.Ok(BoardMutex.Board.Tanks[id]);
+                return (IResult)TypedResults.Ok(Board.Tanks[id]);
             })
             .WithName("GetTankById");
 
             group.MapGet("/total", () => {
-                return new TotalTanks(BoardMutex.Board.Tanks.Count);
+                return new TotalTanks(Board.Tanks.Count);
             })
             .WithName("GetTotalTanks");
 
@@ -124,14 +140,14 @@ namespace Tanks.Models
             {
                 // This causes a race condition.
                 // TODO: Make map a mutex
-                int id = BoardMutex.Board.Tanks.Count + 1;
-                BoardMutex.Board.Tanks.Add(id, new Tank());
+                int id = Board.Tanks.Count + 1;
+                Board.Tanks.Add(id, new Tank());
                 Log.Info($"Created new tank with id: {id}");
-                return TypedResults.Created($"/api/v1/tanks/{id}", BoardMutex.Board.Tanks[id]);
+                return TypedResults.Created($"/api/v1/tanks/{id}", Board.Tanks[id]);
             })
             .WithName("CreateTank");
 
-            group.MapPut("/{id}/move", (int id, int? x, int? y) =>
+            group.MapPost("/{id}/move", (int id, int? x, int? y) =>
             {
                 if(x == null || y == null)
                 {
@@ -141,7 +157,7 @@ namespace Tanks.Models
 
                 try
                 {
-                    if (!BoardMutex.Board.Tanks[id].Move((int)x, (int)y))
+                    if (!Board.Tanks[id].Move((int)x, (int)y))
                     {
                         Log.Error("Unable to move tank");
                         return (IResult)TypedResults.BadRequest(new Response("Unable to move tank"));
@@ -158,22 +174,44 @@ namespace Tanks.Models
             })
             .WithName("MoveTank");
 
-            group.MapPut("/{id}/shoot", (int id, int target) =>
+            group.MapPost("/{id}/color", (int id, string color) =>
             {
-                if(!BoardMutex.Board.Tanks.ContainsKey(id))
+                if (!Board.Tanks.ContainsKey(id))
                 {
                     Log.Error($"Attempted to shoot tank with id {id}. Which does not exist");
                     return (IResult)TypedResults.NotFound(new Response($"Attempted to shoot tank with id {id}. Which does not exist"));
                 }
 
-                if (!BoardMutex.Board.Tanks.ContainsKey(target))
+                Color? parsed = ParseColor(color);
+
+                if(parsed == null)
+                {
+                    Log.Error($"\"{color}\" is not a recognized color");
+                    return (IResult)TypedResults.BadRequest(new Response($"\"{color}\" is not a recognized color"));
+                }
+
+                Board.Tanks[id].Color = (Color)parsed;
+
+                Log.Info("Successfully changed color");
+                return (IResult)TypedResults.Ok(new Response("Successfully changed color"));
+            });
+
+            group.MapPost("/{id}/shoot", (int id, int target) =>
+            {
+                if(!Board.Tanks.ContainsKey(id))
+                {
+                    Log.Error($"Attempted to shoot tank with id {id}. Which does not exist");
+                    return (IResult)TypedResults.NotFound(new Response($"Attempted to shoot tank with id {id}. Which does not exist"));
+                }
+
+                if (!Board.Tanks.ContainsKey(target))
                 {
                     Log.Error($"Attempted to shoot tank id {target}. Which does not exist");
                     return (IResult)TypedResults.NotFound(new Response($"Attempted to shoot tank id {target}. Which does not exist"));
                 }
 
-                Tank origin = BoardMutex.Board.Tanks[id];
-                Tank dest = BoardMutex.Board.Tanks[target];
+                Tank origin = Board.Tanks[id];
+                Tank dest = Board.Tanks[target];
 
                 if(origin.ActionPoints <= 0)
                 {
@@ -194,19 +232,6 @@ namespace Tanks.Models
                 return TypedResults.Ok(new Response("Hit!"));
             })
             .WithName("ShootTank");
-
-            //group.MapDelete("/{id}", (int id) =>
-            //{
-            //    if(!Board.Map.ContainsKey(id))
-            //    {
-            //        return (IResult)TypedResults.BadRequest();
-            //    }
-
-            //    Board.Map.Remove(id);
-            //    return (IResult)TypedResults.Ok();
-            //    // return TypedResults.Ok(new Tank { ID = id });
-            //})
-            //.WithName("DeleteTank");
         }
     }
 }
