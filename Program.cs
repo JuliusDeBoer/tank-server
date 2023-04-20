@@ -20,6 +20,8 @@ namespace Tanks
 
             app.MapControllers();
 
+            app.MapServerEndpoints();
+
             app.MapTankEndpoints();
 
             app.Run();

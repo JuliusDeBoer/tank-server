@@ -5,14 +5,14 @@ A clone of tank tactics by Halfbrick Studios.
 ## Todo
 
  - [ ] General
-   - [ ] Get board
+   - [X] Get board
    - [ ] Get updates from board (Last or something)
    - [ ] Giving points every day
    - [ ] Letting the jury vote
  - [ ] Tanks
    - [X] Movement
    - [X] Shooting (Do this better)
-   - [ ] Updating color
+   - [X] Updating color
    - [ ] Upgrading range
    - [ ] Gifting points
  - [ ] Jury
