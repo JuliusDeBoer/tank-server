@@ -38,7 +38,7 @@ namespace Tanks.Models
 
         public int Id { get; set; }
         public int Health { get; set; } = 3;
-        public int Range { get; set; } = 1;
+        public int Level { get; set; } = 1;
         public int ActionPoints { get; set; } = 10; // DEBUG. REMOVE FOR PRODUCTION
         public Color Color { get; set; } = Color.Green;
         // Only use if MOVEMENT_RANGE should be ignored. Otherwise use Move()
@@ -102,7 +102,8 @@ namespace Tanks.Models
 
     public static class TankEndpoints
     {
-        public const int MAX_TANKS = 255;
+        public static readonly int MAX_TANKS = 255;
+        public static readonly int MAX_LEVEL = 3; 
 
         public class TankTotal {
             public int Total { get; set; }
@@ -201,6 +202,7 @@ namespace Tanks.Models
                     return (IResult)TypedResults.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
+                Log.Info($"Upgraded level of tank {id}")
                 return (IResult)TypedResults.Ok(Response.OK);
             })
             .WithName("MoveTank");
@@ -246,7 +248,7 @@ namespace Tanks.Models
 
                 if (origin.ActionPoints <= 0)
                 {
-                    Log.Error("Not enough action points");
+                    Log.Error(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
                     return (IResult)TypedResults.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
                 }
 
@@ -264,12 +266,46 @@ namespace Tanks.Models
             })
             .WithName("ShootTank");
 
+            group.MapPost("/{id}/upgrade", (int id) =>
+            {
+                if (!Board.Tanks.ContainsKey(id))
+                {
+                    Log.Error(Response.ERR_NO_SUCH_TANK);
+                    return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
+                }
+
+                Tank tank = Board.Tanks[id];
+
+                if (tank.ActionPoints <= 0)
+                {
+                    Log.Error(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
+                    return (IResult)TypedResults.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
+                }
+
+                if (tank.Level >= MAX_LEVEL)
+                {
+                    Log.Error(Response.ERR_MAX_LEVEL_REACHED);
+                    return (IResult)TypedResults.BadRequest(Response.ERR_MAX_LEVEL_REACHED);
+                }
+
+                if (!tank.SpendActionPoint())
+                {
+                    Log.Error(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
+                    return (IResult)TypedResults.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
+                }
+
+                tank.Level++;
+
+                return TypedResults.Ok(Response.OK);
+            })
+            .WithName("UpgradeTank");
+
             group.MapPost("/{id}/give", (int id, int amount, int target) =>
             {
                 if(amount <= 0)
                 {
                     Log.Error("Amount must be higher that 0");
-                    return (IResult)TypedResults.BadRequest(Response.OK);
+                    return (IResult)TypedResults.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
 
                 if (!Board.Tanks.ContainsKey(id))
