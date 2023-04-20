@@ -16,7 +16,8 @@ namespace Tanks.Models
         Green,
         Blue,
         Purple,
-        White
+        White,
+        Hotpink // Developer only
     }
 
     public class Position
@@ -28,16 +29,6 @@ namespace Tanks.Models
         {
             X = x;
             Y = y;
-        }
-    }
-
-    public class Response
-    {
-        public string Message { get; set; }
-
-        public Response(string message)
-        {
-            Message = message;
         }
     }
 
@@ -138,6 +129,7 @@ namespace Tanks.Models
                 "blue" => Color.Blue,
                 "purple" => Color.Purple,
                 "white" => Color.White,
+                "hotpink" => Color.Hotpink,
                 _ => null
             };
         }
@@ -158,7 +150,7 @@ namespace Tanks.Models
                 if (!Board.Tanks.ContainsKey(id))
                 {
                     Log.Error($"Attempted to get tank with id: {id}. Which doesn't exist");
-                    return (IResult)TypedResults.NotFound(new Response("Tank does not exist"));
+                    return (IResult)TypedResults.NotFound(new Response("ERR_NO_TANK_FOUND", "Tank does not exist"));
                 }
                 Log.Info($"Got tank {id}");
                 return (IResult)TypedResults.Ok(Board.Tanks[id]);
@@ -190,25 +182,26 @@ namespace Tanks.Models
                 if (x == null || y == null)
                 {
                     Log.Error("Move was sent. But the position was not correctly specified.");
-                    return (IResult)TypedResults.BadRequest(new Response("Direction was not correctly specified"));
+                    return (IResult)TypedResults.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
 
+                // TODO: Refactor this
                 try
                 {
                     if (!Board.Tanks[id].Move((int)x, (int)y))
                     {
-                        Log.Error("Unable to move tank");
-                        return (IResult)TypedResults.BadRequest(new Response("Unable to move tank"));
+                        Log.Error(new Response("ERR_NOT_IMPLEMENTED", "Unable to move tank"));
+                        return (IResult)TypedResults.BadRequest(new Response("ERR_NOT_IMPLEMENTED", "Unable to move tank"));
                     }
                     Log.Info($"Moved tank {id} {{x: {x}; y: {y}}}");
                 }
                 catch (KeyNotFoundException)
                 {
-                    Log.Error($"Attempted to get tank with id: {id}. Which doesn't exist");
-                    return (IResult)TypedResults.BadRequest(new Response($"Attempted to get tank with id: {id}. Which doesn't exist"));
+                    Log.Error(Response.ERR_NO_SUCH_TANK);
+                    return (IResult)TypedResults.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
-                return (IResult)TypedResults.Ok(new Response("Tank moved"));
+                return (IResult)TypedResults.Ok(Response.OK);
             })
             .WithName("MoveTank");
 
@@ -216,8 +209,8 @@ namespace Tanks.Models
             {
                 if (!Board.Tanks.ContainsKey(id))
                 {
-                    Log.Error($"Attempted to shoot tank with id {id}. Which does not exist");
-                    return (IResult)TypedResults.NotFound(new Response($"Attempted to shoot tank with id {id}. Which does not exist"));
+                    Log.Error(Response.ERR_NO_SUCH_TANK);
+                    return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
                 }
 
                 Color? parsed = ParseColor(color);
@@ -225,27 +218,27 @@ namespace Tanks.Models
                 if (parsed == null)
                 {
                     Log.Error($"\"{color}\" is not a recognized color");
-                    return (IResult)TypedResults.BadRequest(new Response($"\"{color}\" is not a recognized color"));
+                    return (IResult)TypedResults.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
 
                 Board.Tanks[id].Color = (Color)parsed;
 
                 Log.Info("Successfully changed color");
-                return (IResult)TypedResults.Ok(new Response("Successfully changed color"));
+                return (IResult)TypedResults.Ok(Response.OK);
             });
 
             group.MapPost("/{id}/shoot", (int id, int target) =>
             {
                 if (!Board.Tanks.ContainsKey(id))
                 {
-                    Log.Error($"Attempted to shoot tank with id {id}. Which does not exist");
-                    return (IResult)TypedResults.NotFound(new Response($"Attempted to shoot tank with id {id}. Which does not exist"));
+                    Log.Error(Response.ERR_NO_SUCH_TANK);
+                    return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
                 }
 
                 if (!Board.Tanks.ContainsKey(target))
                 {
-                    Log.Error($"Attempted to shoot tank id {target}. Which does not exist");
-                    return (IResult)TypedResults.NotFound(new Response($"Attempted to shoot tank id {target}. Which does not exist"));
+                    Log.Error(Response.ERR_NO_SUCH_TANK);
+                    return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
                 }
 
                 Tank origin = Board.Tanks[id];
@@ -254,20 +247,20 @@ namespace Tanks.Models
                 if (origin.ActionPoints <= 0)
                 {
                     Log.Error("Not enough action points");
-                    return (IResult)TypedResults.BadRequest(new Response("Not enough action points"));
+                    return (IResult)TypedResults.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
                 }
 
                 if (dest.Health <= 0)
                 {
                     Log.Error("Target already dead");
-                    return (IResult)TypedResults.BadRequest(new Response("Target already dead"));
+                    return (IResult)TypedResults.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
 
                 // TODO: Add funcion for this
                 origin.ActionPoints--;
                 dest.Health--;
 
-                return TypedResults.Ok(new Response("Hit!"));
+                return TypedResults.Ok(Response.OK);
             })
             .WithName("ShootTank");
 
@@ -276,19 +269,19 @@ namespace Tanks.Models
                 if(amount <= 0)
                 {
                     Log.Error("Amount must be higher that 0");
-                    return (IResult)TypedResults.BadRequest(new Response("Amount must be higher that 0"));
+                    return (IResult)TypedResults.BadRequest(Response.OK);
                 }
 
                 if (!Board.Tanks.ContainsKey(id))
                 {
-                    Log.Error($"Tank {id} does not exist");
-                    return (IResult)TypedResults.NotFound(new Response($"Tank {id} does not exist"));
+                    Log.Error(Response.ERR_NO_SUCH_TANK);
+                    return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
                 }
 
                 if (!Board.Tanks.ContainsKey(target))
                 {
-                    Log.Error($"Tank {target} does not exist");
-                    return (IResult)TypedResults.NotFound(new Response($"Tank {target} does not exist"));
+                    Log.Error(Response.ERR_NO_SUCH_TANK);
+                    return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
                 }
 
                 Tank origin = Board.Tanks[id];
@@ -297,26 +290,26 @@ namespace Tanks.Models
                 if(origin.Health <= 0)
                 {
                     Log.Error($"Tank {id} is dead");
-                    return (IResult)TypedResults.BadRequest(new Response($"Tank {id} is dead"));
+                    return (IResult)TypedResults.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
                 if (destination.Health <= 0)
                 {
                     Log.Error($"Tank {target} is dead");
-                    return (IResult)TypedResults.BadRequest(new Response($"Tank {target} is dead"));
+                    return (IResult)TypedResults.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
                 // Actually spend points
                 if(!origin.SpendActionPoint(amount))
                 {
                     Log.Error("Tank did not have enough action points");
-                    return (IResult)TypedResults.BadRequest(new Response("Tank did not have enough action points"));
+                    return (IResult)TypedResults.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
                 }
 
                 destination.ActionPoints += amount;
 
                 Log.Info($"Tank {id} gave {amount} action points to tank {target}");
-                return (IResult)TypedResults.Ok(new Response($"Tank {id} gave {amount} action points to tank {target}"));
+                return (IResult)TypedResults.Ok(Response.OK);
             })
             .WithName("GiveActionPoint");
         }

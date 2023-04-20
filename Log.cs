@@ -3,6 +3,7 @@
     public static class Log
     {
         private const string dateFomrat = "HH:MM:ss:ff";
+
         public static void Info(string msg)
         {
             string time = DateTime.Now.ToString(dateFomrat);
@@ -34,12 +35,27 @@
             string time = DateTime.Now.ToString(dateFomrat);
 
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.Write($"[{time}]");
+            Console.Error.Write($"[{time}]");
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write(" ERROR   ");
+            Console.Error.Write(" ERROR   ");
             Console.ForegroundColor = ConsoleColor.White;
 
-            Console.WriteLine(msg);
+            Console.Error.WriteLine(msg);
+        }
+
+        public static void Info(Response response)
+        {
+            Info($"({response.Message}) {response.Message}");
+        }
+
+        public static void Warn(Response response)
+        {
+            Warn($"({response.Message}) {response.Message}");
+        }
+
+        public static void Error(Response response)
+        {
+            Error($"({response.Message}) {response.Message}");
         }
     }
 }
