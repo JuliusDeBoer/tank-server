@@ -45,17 +45,17 @@
 
         public static void Info(Response response)
         {
-            Info($"({response.Message}) {response.Message}");
+            Info($"({response.Code}) {response.Message}");
         }
 
         public static void Warn(Response response)
         {
-            Warn($"({response.Message}) {response.Message}");
+            Warn($"({response.Code}) {response.Message}");
         }
 
         public static void Error(Response response)
         {
-            Error($"({response.Message}) {response.Message}");
+            Error($"({response.Code}) {response.Message}");
         }
     }
 }
