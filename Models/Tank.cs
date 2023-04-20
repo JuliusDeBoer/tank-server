@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using System.Numerics;
+using System.Runtime.Serialization.Formatters;
 
 namespace Tanks.Models
 {
@@ -19,7 +20,7 @@ namespace Tanks.Models
     {
         public int X { get; set; }
         public int Y { get; set; }
-    
+
         public Position(int x, int y)
         {
             X = x;
@@ -41,6 +42,7 @@ namespace Tanks.Models
     {
         public const int MOVEMENT_RANGE = 4;
 
+        public int Id { get; set; }
         public int Health { get; set; } = 3;
         public int Range { get; set; } = 1;
         public int ActionPoints { get; set; } = 0;
@@ -48,9 +50,19 @@ namespace Tanks.Models
         // Only use if MOVEMENT_RANGE should be ignored. Otherwise use Move()
         public Position Position { get; set; } = new Position(0, 0);
 
+        public Tank()
+        {
+            Id = -1;
+        }
+
+        public Tank(int id)
+        {
+            Id = id;
+        }
+
         public bool SpendActionPoint()
         {
-            if(ActionPoints <= 0)
+            if (ActionPoints <= 0)
             {
                 return false;
             }
@@ -63,13 +75,13 @@ namespace Tanks.Models
         public bool Move(int x, int y)
         {
             // Dont have enough action points
-            if(!SpendActionPoint())
+            if (!SpendActionPoint())
             {
                 return false;
             }
 
             // Check if specified move is within range
-            if(!((MOVEMENT_RANGE * -1) <= x && x <= MOVEMENT_RANGE && (MOVEMENT_RANGE * -1) <= y && y <= MOVEMENT_RANGE))
+            if (!((MOVEMENT_RANGE * -1) <= x && x <= MOVEMENT_RANGE && (MOVEMENT_RANGE * -1) <= y && y <= MOVEMENT_RANGE))
             {
                 return false;
             }
@@ -83,13 +95,19 @@ namespace Tanks.Models
 
     public static class TankEndpoints
     {
-        public class TotalTanks
-        {
-            public int Total { get; set; } = 0;
+        public const int MAX_TANKS = 255;
 
-            public TotalTanks(int total)
+        public class TankTotal {
+            public int Total { get; set; }
+            public List<Tank> Tanks { get; set; } = new List<Tank>();
+
+            public TankTotal(Dictionary<int, Tank> tanks)
             {
-                Total = total;
+                foreach (KeyValuePair<int, Tank> pair in tanks)
+                {
+                    Tanks.Add(pair.Value);
+                    Total++;
+                }
             }
         }
 
@@ -115,7 +133,7 @@ namespace Tanks.Models
             group.MapGet("/", () =>
             {
                 Log.Info("Requested all tanks");
-                return Board.Tanks;
+                return new TankTotal(Board.Tanks);
             })
             .WithName("GetAllTanks");
 
@@ -131,25 +149,29 @@ namespace Tanks.Models
             })
             .WithName("GetTankById");
 
-            group.MapGet("/total", () => {
-                return new TotalTanks(Board.Tanks.Count);
-            })
-            .WithName("GetTotalTanks");
-
             group.MapPost("/create", () =>
             {
-                // This causes a race condition.
-                // TODO: Make map a mutex
+                if(Board.Tanks.Count >= MAX_TANKS)
+                {
+                    Log.Error("Maximum number of tanks reached");
+                    return (IResult)TypedResults.Problem("Maximum number of tanks reached");
+                }
+
+                // Mke sure that the key is unique. Should in theory never be needed
                 int id = Board.Tanks.Count + 1;
-                Board.Tanks.Add(id, new Tank());
+                while(Board.Tanks.ContainsKey(id))
+                {
+                    id++;
+                }
+                Board.Tanks.Add(id, new Tank(id));
                 Log.Info($"Created new tank with id: {id}");
-                return TypedResults.Created($"/api/v1/tanks/{id}", Board.Tanks[id]);
+                return (IResult)TypedResults.Created($"/api/v1/tanks/{id}", Board.Tanks[id]);
             })
             .WithName("CreateTank");
 
             group.MapPost("/{id}/move", (int id, int? x, int? y) =>
             {
-                if(x == null || y == null)
+                if (x == null || y == null)
                 {
                     Log.Error("Move was sent. But the position was not correctly specified.");
                     return (IResult)TypedResults.BadRequest(new Response("Direction was not correctly specified"));
@@ -184,7 +206,7 @@ namespace Tanks.Models
 
                 Color? parsed = ParseColor(color);
 
-                if(parsed == null)
+                if (parsed == null)
                 {
                     Log.Error($"\"{color}\" is not a recognized color");
                     return (IResult)TypedResults.BadRequest(new Response($"\"{color}\" is not a recognized color"));
@@ -198,7 +220,7 @@ namespace Tanks.Models
 
             group.MapPost("/{id}/shoot", (int id, int target) =>
             {
-                if(!Board.Tanks.ContainsKey(id))
+                if (!Board.Tanks.ContainsKey(id))
                 {
                     Log.Error($"Attempted to shoot tank with id {id}. Which does not exist");
                     return (IResult)TypedResults.NotFound(new Response($"Attempted to shoot tank with id {id}. Which does not exist"));
@@ -213,13 +235,13 @@ namespace Tanks.Models
                 Tank origin = Board.Tanks[id];
                 Tank dest = Board.Tanks[target];
 
-                if(origin.ActionPoints <= 0)
+                if (origin.ActionPoints <= 0)
                 {
                     Log.Error("Not enough action points");
                     return (IResult)TypedResults.BadRequest(new Response("Not enough action points"));
                 }
 
-                if(dest.Health <= 0)
+                if (dest.Health <= 0)
                 {
                     Log.Error("Target already dead");
                     return (IResult)TypedResults.BadRequest(new Response("Target already dead"));
