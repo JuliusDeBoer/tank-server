@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using System;
 using System.Numerics;
 using System.Runtime.Serialization.Formatters;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 
 namespace Tanks.Models
 {
@@ -45,7 +48,7 @@ namespace Tanks.Models
         public int Id { get; set; }
         public int Health { get; set; } = 3;
         public int Range { get; set; } = 1;
-        public int ActionPoints { get; set; } = 0;
+        public int ActionPoints { get; set; } = 10; // DEBUG. REMOVE FOR PRODUCTION
         public Color Color { get; set; } = Color.Green;
         // Only use if MOVEMENT_RANGE should be ignored. Otherwise use Move()
         public Position Position { get; set; } = new Position(0, 0);
@@ -59,7 +62,8 @@ namespace Tanks.Models
         {
             Id = id;
         }
-
+        
+        // Returns false if the tank has no action points left
         public bool SpendActionPoint()
         {
             if (ActionPoints <= 0)
@@ -68,6 +72,18 @@ namespace Tanks.Models
             }
 
             ActionPoints--;
+            return true;
+        }
+
+        // Returns false if the tank has not enough action points
+        public bool SpendActionPoint(int amount)
+        {
+            if (ActionPoints < amount)
+            {
+                return false;
+            }
+
+            ActionPoints -= amount;
             return true;
         }
 
@@ -151,7 +167,7 @@ namespace Tanks.Models
 
             group.MapPost("/create", () =>
             {
-                if(Board.Tanks.Count >= MAX_TANKS)
+                if (Board.Tanks.Count >= MAX_TANKS)
                 {
                     Log.Error("Maximum number of tanks reached");
                     return (IResult)TypedResults.Problem("Maximum number of tanks reached");
@@ -159,7 +175,7 @@ namespace Tanks.Models
 
                 // Mke sure that the key is unique. Should in theory never be needed
                 int id = Board.Tanks.Count + 1;
-                while(Board.Tanks.ContainsKey(id))
+                while (Board.Tanks.ContainsKey(id))
                 {
                     id++;
                 }
@@ -254,6 +270,55 @@ namespace Tanks.Models
                 return TypedResults.Ok(new Response("Hit!"));
             })
             .WithName("ShootTank");
+
+            group.MapPost("/{id}/give", (int id, int amount, int target) =>
+            {
+                if(amount <= 0)
+                {
+                    Log.Error("Amount must be higher that 0");
+                    return (IResult)TypedResults.BadRequest(new Response("Amount must be higher that 0"));
+                }
+
+                if (!Board.Tanks.ContainsKey(id))
+                {
+                    Log.Error($"Tank {id} does not exist");
+                    return (IResult)TypedResults.NotFound(new Response($"Tank {id} does not exist"));
+                }
+
+                if (!Board.Tanks.ContainsKey(target))
+                {
+                    Log.Error($"Tank {target} does not exist");
+                    return (IResult)TypedResults.NotFound(new Response($"Tank {target} does not exist"));
+                }
+
+                Tank origin = Board.Tanks[id];
+                Tank destination = Board.Tanks[target];
+
+                if(origin.Health <= 0)
+                {
+                    Log.Error($"Tank {id} is dead");
+                    return (IResult)TypedResults.BadRequest(new Response($"Tank {id} is dead"));
+                }
+
+                if (destination.Health <= 0)
+                {
+                    Log.Error($"Tank {target} is dead");
+                    return (IResult)TypedResults.BadRequest(new Response($"Tank {target} is dead"));
+                }
+
+                // Actually spend points
+                if(!origin.SpendActionPoint(amount))
+                {
+                    Log.Error("Tank did not have enough action points");
+                    return (IResult)TypedResults.BadRequest(new Response("Tank did not have enough action points"));
+                }
+
+                destination.ActionPoints += amount;
+
+                Log.Info($"Tank {id} gave {amount} action points to tank {target}");
+                return (IResult)TypedResults.Ok(new Response($"Tank {id} gave {amount} action points to tank {target}"));
+            })
+            .WithName("GiveActionPoint");
         }
     }
 }
