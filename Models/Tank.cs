@@ -141,40 +141,40 @@ namespace Tanks.Models
 
             group.MapGet("/", () =>
             {
-                Log.Info("Requested all tanks");
-                return new TankTotal(Board.Tanks);
+                Log.Info("Requested all PTanks");
+                return new TankTotal(Game.Tanks);
             })
             .WithName("GetAllTanks");
 
             group.MapGet("/{id}", (int id) =>
             {
-                if (!Board.Tanks.ContainsKey(id))
+                if (!Game.Tanks.ContainsKey(id))
                 {
                     Log.Error($"Attempted to get tank with id: {id}. Which doesn't exist");
                     return (IResult)TypedResults.NotFound(new Response("ERR_NO_TANK_FOUND", "Tank does not exist"));
                 }
                 Log.Info($"Got tank {id}");
-                return (IResult)TypedResults.Ok(Board.Tanks[id]);
+                return (IResult)TypedResults.Ok(Game.Tanks[id]);
             })
             .WithName("GetTankById");
 
             group.MapPost("/create", () =>
             {
-                if (Board.Tanks.Count >= MAX_TANKS)
+                if (Game.Tanks.Count >= MAX_TANKS)
                 {
-                    Log.Error("Maximum number of tanks reached");
-                    return (IResult)TypedResults.Problem("Maximum number of tanks reached");
+                    Log.Error("Maximum number of PTanks reached");
+                    return (IResult)TypedResults.Problem("Maximum number of PTanks reached");
                 }
 
                 // Mke sure that the key is unique. Should in theory never be needed
-                int id = Board.Tanks.Count + 1;
-                while (Board.Tanks.ContainsKey(id))
+                int id = Game.Tanks.Count + 1;
+                while (Game.Tanks.ContainsKey(id))
                 {
                     id++;
                 }
-                Board.Tanks.Add(id, new Tank(id));
+                Game.Tanks.Add(id, new Tank(id));
                 Log.Info($"Created new tank with id: {id}");
-                return (IResult)TypedResults.Created($"/api/v1/tanks/{id}", Board.Tanks[id]);
+                return (IResult)TypedResults.Created($"/api/v1/PTanks/{id}", Game.Tanks[id]);
             })
             .WithName("CreateTank");
 
@@ -189,7 +189,7 @@ namespace Tanks.Models
                 // TODO: Refactor this
                 try
                 {
-                    if (!Board.Tanks[id].Move((int)x, (int)y))
+                    if (!Game.Tanks[id].Move((int)x, (int)y))
                     {
                         Log.Error(new Response("ERR_NOT_IMPLEMENTED", "Unable to move tank"));
                         return (IResult)TypedResults.BadRequest(new Response("ERR_NOT_IMPLEMENTED", "Unable to move tank"));
@@ -209,7 +209,7 @@ namespace Tanks.Models
 
             group.MapPost("/{id}/color", (int id, string color) =>
             {
-                if (!Board.Tanks.ContainsKey(id))
+                if (!Game.Tanks.ContainsKey(id))
                 {
                     Log.Error(Response.ERR_NO_SUCH_TANK);
                     return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
@@ -223,7 +223,7 @@ namespace Tanks.Models
                     return (IResult)TypedResults.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
 
-                Board.Tanks[id].Color = (Color)parsed;
+                Game.Tanks[id].Color = (Color)parsed;
 
                 Log.Info("Successfully changed color");
                 return (IResult)TypedResults.Ok(Response.OK);
@@ -231,20 +231,20 @@ namespace Tanks.Models
 
             group.MapPost("/{id}/shoot", (int id, int target) =>
             {
-                if (!Board.Tanks.ContainsKey(id))
+                if (!Game.Tanks.ContainsKey(id))
                 {
                     Log.Error(Response.ERR_NO_SUCH_TANK);
                     return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
                 }
 
-                if (!Board.Tanks.ContainsKey(target))
+                if (!Game.Tanks.ContainsKey(target))
                 {
                     Log.Error(Response.ERR_NO_SUCH_TANK);
                     return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
                 }
 
-                Tank origin = Board.Tanks[id];
-                Tank dest = Board.Tanks[target];
+                Tank origin = Game.Tanks[id];
+                Tank dest = Game.Tanks[target];
 
                 if (origin.ActionPoints <= 0)
                 {
@@ -268,13 +268,13 @@ namespace Tanks.Models
 
             group.MapPost("/{id}/upgrade", (int id) =>
             {
-                if (!Board.Tanks.ContainsKey(id))
+                if (!Game.Tanks.ContainsKey(id))
                 {
                     Log.Error(Response.ERR_NO_SUCH_TANK);
                     return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
                 }
 
-                Tank tank = Board.Tanks[id];
+                Tank tank = Game.Tanks[id];
 
                 if (tank.ActionPoints <= 0)
                 {
@@ -308,20 +308,20 @@ namespace Tanks.Models
                     return (IResult)TypedResults.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
 
-                if (!Board.Tanks.ContainsKey(id))
+                if (!Game.Tanks.ContainsKey(id))
                 {
                     Log.Error(Response.ERR_NO_SUCH_TANK);
                     return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
                 }
 
-                if (!Board.Tanks.ContainsKey(target))
+                if (!Game.Tanks.ContainsKey(target))
                 {
                     Log.Error(Response.ERR_NO_SUCH_TANK);
                     return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
                 }
 
-                Tank origin = Board.Tanks[id];
-                Tank destination = Board.Tanks[target];
+                Tank origin = Game.Tanks[id];
+                Tank destination = Game.Tanks[target];
 
                 if(origin.Health <= 0)
                 {
