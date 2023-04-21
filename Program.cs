@@ -22,6 +22,8 @@ namespace Tanks
 
             app.MapServerEndpoints();
 
+            app.MapAccountEndpoints();
+
             app.MapTankEndpoints();
 
             app.Run();

@@ -202,7 +202,7 @@ namespace Tanks.Models
                     return (IResult)TypedResults.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
-                Log.Info($"Upgraded level of tank {id}")
+                Log.Info($"Upgraded level of tank {id}");
                 return (IResult)TypedResults.Ok(Response.OK);
             })
             .WithName("MoveTank");
