@@ -13,7 +13,7 @@ A clone of tank tactics by Halfbrick Studios.
    - [X] Movement
    - [X] Shooting (Do this better)
    - [X] Updating color
-   - [ ] Upgrading range
+   - [X] Upgrading range
    - [X] Gifting points
  - [ ] Jury
    - [ ] Letting people vote
