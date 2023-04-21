@@ -1,4 +1,10 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Tanks.Models
 {
@@ -16,6 +22,9 @@ namespace Tanks.Models
 
     public static class AccountEndpoints
     {
+        private const string Secret = "Conjuror1-Antivirus-Breeze-Gliding-Eats"; // DEBUG! REMOVE IN PRODUCTION
+        private static readonly SymmetricSecurityKey SecretKey = new(Encoding.ASCII.GetBytes(Secret));
+
         private static string PasswordEnrypt(string password)
         {
             return Convert.ToBase64String(KeyDerivation.Pbkdf2(
@@ -33,8 +42,21 @@ namespace Tanks.Models
             group.MapPost("/create", (string username, string password) =>
             {
                 string encrypted = PasswordEnrypt(password);
-                Log.Info($"{username} with password {encrypted} wants to make an account");
-                return (IResult)TypedResults.Ok(Response.OK);
+
+                JwtSecurityTokenHandler handler = new();
+                SecurityTokenDescriptor descriptor = new()
+                {
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
+                        new Claim(ClaimTypes.NameIdentifier, username)
+                    }),
+                    Expires = DateTime.MaxValue,
+                    SigningCredentials = new SigningCredentials(SecretKey, SecurityAlgorithms.HmacSha512Signature)
+                };
+
+                SecurityToken token = handler.CreateToken(descriptor);
+
+                return (IResult)TypedResults.Created(handler.WriteToken(token));
             })
             .WithName("CreateAccount");
 
