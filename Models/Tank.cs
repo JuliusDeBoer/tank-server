@@ -166,11 +166,10 @@ namespace Tanks.Models
             {
                 if (Game.Tanks.Count >= MAX_TANKS)
                 {
-                    Log.Error("Maximum number of PTanks reached");
-                    return (IResult)TypedResults.Problem("Maximum number of PTanks reached");
+                    return Response.BadRequest(Response.ERR_MAX_TANKS_REACHED);
                 }
 
-                // Mke sure that the key is unique. Should in theory never be needed
+                // Make sure that the key is unique. Should in theory never be needed
                 int id = Game.Tanks.Count + 1;
                 while (Game.Tanks.ContainsKey(id))
                 {
@@ -186,8 +185,7 @@ namespace Tanks.Models
             {
                 if (x == null || y == null)
                 {
-                    Log.Error("Move was sent. But the position was not correctly specified.");
-                    return (IResult)TypedResults.BadRequest(Response.ERR_BAD_ARGUMENTS);
+                    return Response.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
 
                 // TODO: Refactor this
@@ -202,12 +200,10 @@ namespace Tanks.Models
                 }
                 catch (KeyNotFoundException)
                 {
-                    Log.Error(Response.ERR_NO_SUCH_TANK);
-                    return (IResult)TypedResults.BadRequest(Response.ERR_NO_SUCH_TANK);
+                    return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
-                Log.Info($"Upgraded level of tank {id}");
-                return (IResult)TypedResults.Ok(Response.OK);
+                return Response.Ok(Response.OK);
             })
             .WithName("MoveTank");
 
@@ -215,36 +211,31 @@ namespace Tanks.Models
             {
                 if (!Game.Tanks.ContainsKey(id))
                 {
-                    Log.Error(Response.ERR_NO_SUCH_TANK);
-                    return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
+                    return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
                 Color? parsed = ParseColor(color);
 
                 if (parsed == null)
                 {
-                    Log.Error($"\"{color}\" is not a recognized color");
-                    return (IResult)TypedResults.BadRequest(Response.ERR_BAD_ARGUMENTS);
+                    return Response.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
 
                 Game.Tanks[id].Color = (Color)parsed;
 
-                Log.Info("Successfully changed color");
-                return (IResult)TypedResults.Ok(Response.OK);
+                return Response.Ok(Response.OK);
             });
 
             group.MapPost("/{id}/shoot", (int id, int target) =>
             {
                 if (!Game.Tanks.ContainsKey(id))
                 {
-                    Log.Error(Response.ERR_NO_SUCH_TANK);
-                    return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
+                    return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
                 if (!Game.Tanks.ContainsKey(target))
                 {
-                    Log.Error(Response.ERR_NO_SUCH_TANK);
-                    return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
+                    return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
                 Tank origin = Game.Tanks[id];
@@ -252,14 +243,12 @@ namespace Tanks.Models
 
                 if (origin.ActionPoints <= 0)
                 {
-                    Log.Error(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
-                    return (IResult)TypedResults.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
+                    return Response.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
                 }
 
                 if (dest.Health <= 0)
                 {
-                    Log.Error("Target already dead");
-                    return (IResult)TypedResults.BadRequest(Response.ERR_BAD_ARGUMENTS);
+                    return Response.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
 
                 // TODO: Add funcion for this
@@ -274,33 +263,29 @@ namespace Tanks.Models
             {
                 if (!Game.Tanks.ContainsKey(id))
                 {
-                    Log.Error(Response.ERR_NO_SUCH_TANK);
-                    return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
+                    return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
                 Tank tank = Game.Tanks[id];
 
                 if (tank.ActionPoints <= 0)
                 {
-                    Log.Error(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
-                    return (IResult)TypedResults.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
+                    return Response.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
                 }
 
                 if (tank.Level >= MAX_LEVEL)
                 {
-                    Log.Error(Response.ERR_MAX_LEVEL_REACHED);
-                    return (IResult)TypedResults.BadRequest(Response.ERR_MAX_LEVEL_REACHED);
+                    return Response.BadRequest(Response.ERR_MAX_LEVEL_REACHED);
                 }
 
                 if (!tank.SpendActionPoint())
                 {
-                    Log.Error(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
-                    return (IResult)TypedResults.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
+                    return Response.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
                 }
 
                 tank.Level++;
 
-                return TypedResults.Ok(Response.OK);
+                return Response.Ok(Response.OK);
             })
             .WithName("UpgradeTank");
 
@@ -308,20 +293,17 @@ namespace Tanks.Models
             {
                 if(amount <= 0)
                 {
-                    Log.Error("Amount must be higher that 0");
-                    return (IResult)TypedResults.BadRequest(Response.ERR_BAD_ARGUMENTS);
+                    return Response.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
 
                 if (!Game.Tanks.ContainsKey(id))
                 {
-                    Log.Error(Response.ERR_NO_SUCH_TANK);
-                    return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
+                    return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
                 if (!Game.Tanks.ContainsKey(target))
                 {
-                    Log.Error(Response.ERR_NO_SUCH_TANK);
-                    return (IResult)TypedResults.NotFound(Response.ERR_NO_SUCH_TANK);
+                    return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
                 Tank origin = Game.Tanks[id];
@@ -329,27 +311,23 @@ namespace Tanks.Models
 
                 if(origin.Health <= 0)
                 {
-                    Log.Error($"Tank {id} is dead");
-                    return (IResult)TypedResults.BadRequest(Response.ERR_NO_SUCH_TANK);
+                    return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
                 if (destination.Health <= 0)
                 {
-                    Log.Error($"Tank {target} is dead");
-                    return (IResult)TypedResults.BadRequest(Response.ERR_NO_SUCH_TANK);
+                    return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
                 // Actually spend points
                 if(!origin.SpendActionPoint(amount))
                 {
-                    Log.Error("Tank did not have enough action points");
-                    return (IResult)TypedResults.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
+                    return Response.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
                 }
 
                 destination.ActionPoints += amount;
 
-                Log.Info($"Tank {id} gave {amount} action points to tank {target}");
-                return (IResult)TypedResults.Ok(Response.OK);
+                return Response.Ok(Response.OK);
             })
             .WithName("GiveActionPoint");
         }

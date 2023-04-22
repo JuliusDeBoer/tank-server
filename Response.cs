@@ -11,11 +11,24 @@
             Message = message;
         }
 
+        public static IResult Ok(Response response)
+        {
+            Log.Info(response);
+            return TypedResults.Ok(response);
+        }
+
+        public static IResult BadRequest(Response response)
+        {
+            Log.Error(response);
+            return TypedResults.BadRequest(response);
+        }
+
         // Tanks errors
         public static readonly Response ERR_NO_SUCH_TANK = new("ERR_NO_SUCH_TANK", "Tank was not found");
         public static readonly Response ERR_BAD_ARGUMENTS = new("ERR_BAD_ARGUMENTS", "Arguments where invalid");
         public static readonly Response ERR_NOT_ENOUGH_ACTION_POINTS = new("ERR_NOT_ENOUGH_ACTION_POINTS", "Tank does not have enough action points");
         public static readonly Response ERR_MAX_LEVEL_REACHED = new("ERR_MAX_LEVEL_REACHED", "Tank is already at the highest level");
+        public static readonly Response ERR_MAX_TANKS_REACHED = new("ERR_MAX_TANKS_REACHED", "Maximum number of tanks was reaced");
 
         // Account errors
         public static readonly Response ERR_NO_CREDENTIALS = new("ERR_NO_CREDENTIALS", "No credentials where provided");

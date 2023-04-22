@@ -65,8 +65,7 @@ namespace Tanks.Models
             {
                 if(Game.Accounts.ContainsKey(email))
                 {
-                    Log.Error(Response.ERR_ACCOUNT_EXISTS);
-                    return (IResult)TypedResults.BadRequest(Response.ERR_ACCOUNT_EXISTS);
+                    return Response.BadRequest(Response.ERR_ACCOUNT_EXISTS);
                 }
 
                 string encrypted = PasswordEnrypt(password);
@@ -81,8 +80,7 @@ namespace Tanks.Models
             {
                 if (!Game.Accounts.ContainsKey(email))
                 {
-                    Log.Error(Response.ERR_INVALID_CREDENTIALS);
-                    return (IResult)TypedResults.BadRequest(Response.ERR_INVALID_CREDENTIALS);
+                    return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS;
                 }
 
                 Account account = Game.Accounts[email];
@@ -93,8 +91,7 @@ namespace Tanks.Models
                     return (IResult)TypedResults.Ok(token);
                 }
 
-                Log.Error(Response.ERR_INVALID_CREDENTIALS);
-                return (IResult)TypedResults.BadRequest(Response.ERR_INVALID_CREDENTIALS);
+                return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS;
             })
             .WithName("Login");
         }
