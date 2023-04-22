@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -11,11 +9,13 @@ namespace Tanks.Models
     public class Account
     {
         public string Username;
+        public string Email;
         public string Password;
 
-        public Account(string username, string password)
+        public Account(string username, string email, string password)
         {
             Username = username;
+            Email = email;
             Password = password;
         }
     }
@@ -27,13 +27,13 @@ namespace Tanks.Models
 
         private static readonly JwtSecurityTokenHandler Handler = new();
 
-        public static string CreateUserToken(int id)
+        public static string CreateUserToken(string email)
         {
             SecurityTokenDescriptor descriptor = new()
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim("id", id.ToString())
+                    new Claim("email", email)
                 }),
                 Expires = DateTime.MaxValue,
                 SigningCredentials = new SigningCredentials(SecretKey, SecurityAlgorithms.HmacSha512Signature)
@@ -61,22 +61,40 @@ namespace Tanks.Models
             RouteGroupBuilder group = routes.MapGroup("/api/v1/account");
 
             // TODO: Create a algorith to get unique id
-            group.MapPost("/create", (string username, string password) =>
+            group.MapPost("/create", (string username, string email, string password) =>
             {
+                if(Game.Accounts.ContainsKey(email))
+                {
+                    Log.Error(Response.ERR_ACCOUNT_EXISTS);
+                    return (IResult)TypedResults.BadRequest(Response.ERR_ACCOUNT_EXISTS);
+                }
+
                 string encrypted = PasswordEnrypt(password);
-                int id = Game.Accounts.Count + 1;
+                Game.Accounts.Add(email, new Account(username, email, encrypted));
 
-                Game.Accounts.Add(id, new Account(username, password));
-
-                string token = JwtAuthenticator.CreateUserToken(id);
-
-                return (IResult)TypedResults.Created(token);
+                string token = JwtAuthenticator.CreateUserToken(email);
+                return (IResult)TypedResults.Created("/api/v1/account/login");
             })
             .WithName("CreateAccount");
 
-            group.MapGet("/login", (string username, string password) =>
+            group.MapGet("/login", (string email, string password) =>
             {
-                return (IResult)TypedResults.Ok(Response.OK);
+                if (!Game.Accounts.ContainsKey(email))
+                {
+                    Log.Error(Response.ERR_INVALID_CREDENTIALS);
+                    return (IResult)TypedResults.BadRequest(Response.ERR_INVALID_CREDENTIALS);
+                }
+
+                Account account = Game.Accounts[email];
+
+                if (account.Password == PasswordEnrypt(password))
+                {
+                    string token = JwtAuthenticator.CreateUserToken(email);
+                    return (IResult)TypedResults.Ok(token);
+                }
+
+                Log.Error(Response.ERR_INVALID_CREDENTIALS);
+                return (IResult)TypedResults.BadRequest(Response.ERR_INVALID_CREDENTIALS);
             })
             .WithName("Login");
         }

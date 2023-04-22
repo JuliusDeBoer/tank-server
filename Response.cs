@@ -20,6 +20,7 @@
         // Account errors
         public static readonly Response ERR_NO_CREDENTIALS = new("ERR_NO_CREDENTIALS", "No credentials where provided");
         public static readonly Response ERR_INVALID_CREDENTIALS = new("ERR_INVALID_CREDENTIALS", "Provided credentials where invalid");
+        public static readonly Response ERR_ACCOUNT_EXISTS = new("ERR_ACCOUNT_EXISTS", "Account with that email already exists");
 
         // success
         public static readonly Response OK = new("OK", "Operation was successful");

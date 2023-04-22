@@ -23,14 +23,14 @@ namespace Tanks
                 _tanksMutex.ReleaseMutex();
             }
         }
-        private static Dictionary<int, Account> PAccounts { get; set; } = new Dictionary<int, Account>();
+        private static Dictionary<string, Account> PAccounts { get; set; } = new Dictionary<string, Account>();
         private static readonly Mutex _accountsMutex = new();
-        public static Dictionary<int, Account> Accounts
+        public static Dictionary<string, Account> Accounts
         {
             get
             {
                 _accountsMutex.WaitOne();
-                Dictionary<int, Account> content = PAccounts;
+                Dictionary<string, Account> content = PAccounts;
                 _accountsMutex.ReleaseMutex();
                 return content;
             }

@@ -9,7 +9,7 @@ A clone of tank tactics by Halfbrick Studios.
    - [ ] Get updates from board (Last or something)
    - [ ] Giving points every day
    - [ ] Letting the jury vote
- - [ ] Tanks
+ - [X] Tanks
    - [X] Movement
    - [X] Shooting (Do this better)
    - [X] Updating color
@@ -17,9 +17,9 @@ A clone of tank tactics by Halfbrick Studios.
    - [X] Gifting points
  - [ ] Jury
    - [ ] Letting people vote
- - [ ] Account
-   - [ ] Abillity to create an account
-   - [ ] Log in
+ - [X] Account
+   - [X] Abillity to create an account
+   - [X] Log in
 
 ### Optional
 

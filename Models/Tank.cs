@@ -39,7 +39,11 @@ namespace Tanks.Models
         public int Id { get; set; }
         public int Health { get; set; } = 3;
         public int Level { get; set; } = 1;
-        public int ActionPoints { get; set; } = 10; // DEBUG. REMOVE FOR PRODUCTION
+#if DEBUG
+        public int ActionPoints { get; set; } = 10;
+#else
+        public int ActionPoints { get; set; } = 0;
+#endif
         public Color Color { get; set; } = Color.Green;
         // Only use if MOVEMENT_RANGE should be ignored. Otherwise use Move()
         public Position Position { get; set; } = new Position(0, 0);
