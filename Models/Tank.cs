@@ -48,11 +48,6 @@ namespace Tanks.Models
         // Only use if MOVEMENT_RANGE should be ignored. Otherwise use Move()
         public Position Position { get; set; } = new Position(0, 0);
 
-        public Tank()
-        {
-            Id = -1;
-        }
-
         public Tank(int id)
         {
             Id = id;

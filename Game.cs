@@ -42,6 +42,15 @@ namespace Tanks
             }
         }
 
+        // Password must be hashed beforehand
+        public static void CreateAccount(string username, string email, string password)
+        {
+            int id = Tanks.Count + 1;
+
+            Tanks.Add(id, new Tank(id));
+            Accounts.Add(email, new Account(username, email, password, id));
+        }
+
         public static int GetTankByPosition(Models.Position position)
         {
             foreach (KeyValuePair<int, Tank> pair in Tanks)

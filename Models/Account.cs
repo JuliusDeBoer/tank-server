@@ -11,12 +11,14 @@ namespace Tanks.Models
         public string Username;
         public string Email;
         public string Password;
+        public int TankId;
 
-        public Account(string username, string email, string password)
+        public Account(string username, string email, string password, int tankId)
         {
             Username = username;
             Email = email;
             Password = password;
+            TankId = tankId;
         }
     }
 
@@ -69,7 +71,7 @@ namespace Tanks.Models
                 }
 
                 string encrypted = PasswordEnrypt(password);
-                Game.Accounts.Add(email, new Account(username, email, encrypted));
+                Game.CreateAccount(username, email, encrypted);
 
                 string token = JwtAuthenticator.CreateUserToken(email);
                 return (IResult)TypedResults.Created("/api/v1/account/login");
@@ -80,7 +82,7 @@ namespace Tanks.Models
             {
                 if (!Game.Accounts.ContainsKey(email))
                 {
-                    return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS;
+                    return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS);
                 }
 
                 Account account = Game.Accounts[email];
@@ -91,7 +93,7 @@ namespace Tanks.Models
                     return (IResult)TypedResults.Ok(token);
                 }
 
-                return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS;
+                return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS);
             })
             .WithName("Login");
         }
