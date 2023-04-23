@@ -55,10 +55,9 @@
         {
             RouteGroupBuilder group = routes.MapGroup("/api/v1/jury");
 
-            group.MapGet("/vote", (HttpContext context) =>
+            group.MapPost("/vote", (HttpContext context) =>
             {
-                var headers = context.Request.Headers;
-
+                IHeaderDictionary headers = context.Request.Headers;
                 Account? account = Game.Authenticator.GetUser(headers);
 
                 if(account == null)

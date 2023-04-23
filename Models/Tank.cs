@@ -151,31 +151,21 @@
             })
             .WithName("GetTankById");
 
-            group.MapPost("/create", () =>
+            group.MapPost("/move", (HttpContext context, int? x, int? y) =>
             {
-                if (Game.Tanks.Count >= MAX_TANKS)
+                Account? account = Game.Authenticator.GetUser(context.Request.Headers);
+
+                if (account == null)
                 {
-                    return Response.BadRequest(Response.ERR_MAX_TANKS_REACHED);
+                    return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS);
                 }
 
-                // Make sure that the key is unique. Should in theory never be needed
-                int id = Game.Tanks.Count + 1;
-                while (Game.Tanks.ContainsKey(id))
-                {
-                    id++;
-                }
-                Game.Tanks.Add(id, new Tank(id));
-                Log.Info($"Created new tank with id: {id}");
-                return (IResult)TypedResults.Created($"/api/v1/PTanks/{id}", Game.Tanks[id]);
-            })
-            .WithName("CreateTank");
-
-            group.MapPost("/{id}/move", (int id, int? x, int? y) =>
-            {
                 if (x == null || y == null)
                 {
                     return Response.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
+
+                int id = account.TankId;
 
                 // TODO: Refactor this
                 try
@@ -196,8 +186,17 @@
             })
             .WithName("MoveTank");
 
-            group.MapPost("/{id}/color", (int id, string color) =>
+            group.MapPost("/color", (HttpContext context, string color) =>
             {
+                Account? account = Game.Authenticator.GetUser(context.Request.Headers);
+
+                if (account == null)
+                {
+                    return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS);
+                }
+
+                int id = account.TankId;
+
                 if (!Game.Tanks.ContainsKey(id))
                 {
                     return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
@@ -215,8 +214,17 @@
                 return Response.Ok(Response.OK);
             });
 
-            group.MapPost("/{id}/shoot", (int id, int target) =>
+            group.MapPost("/shoot", (HttpContext context, int target) =>
             {
+                Account? account = Game.Authenticator.GetUser(context.Request.Headers);
+
+                if (account == null)
+                {
+                    return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS);
+                }
+
+                int id = account.TankId;
+
                 if (!Game.Tanks.ContainsKey(id))
                 {
                     return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
@@ -248,8 +256,17 @@
             })
             .WithName("ShootTank");
 
-            group.MapPost("/{id}/upgrade", (int id) =>
+            group.MapPost("/upgrade", (HttpContext context) =>
             {
+                Account? account = Game.Authenticator.GetUser(context.Request.Headers);
+
+                if (account == null)
+                {
+                    return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS);
+                }
+
+                int id = account.TankId;
+
                 if (!Game.Tanks.ContainsKey(id))
                 {
                     return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
@@ -278,8 +295,17 @@
             })
             .WithName("UpgradeTank");
 
-            group.MapPost("/{id}/give", (int id, int amount, int target) =>
+            group.MapPost("/give", (HttpContext context, int amount, int target) =>
             {
+                Account? account = Game.Authenticator.GetUser(context.Request.Headers);
+
+                if (account == null)
+                {
+                    return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS);
+                }
+
+                int id = account.TankId;
+
                 if (amount <= 0)
                 {
                     return Response.BadRequest(Response.ERR_BAD_ARGUMENTS);
