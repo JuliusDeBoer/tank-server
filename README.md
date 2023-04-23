@@ -4,11 +4,9 @@ A clone of tank tactics by Halfbrick Studios.
 
 ## Todo
 
- - [ ] General
+ - [X] General
    - [X] Get board
-   - [ ] Get updates from board (Last or something)
-   - [ ] Giving points every day
-   - [ ] Letting the jury vote
+   - [X] Giving points every day
  - [ ] Tanks
    - [X] Movement
    - [X] Shooting (Do this better)
@@ -16,8 +14,9 @@ A clone of tank tactics by Halfbrick Studios.
    - [X] Upgrading range
    - [X] Gifting points
    - [ ] Dont use dead tanks
- - [ ] Jury
-   - [ ] Letting people vote
+   - [ ] Implement SingalR
+ - [X] Jury
+   - [X] Letting people vote
  - [X] Account
    - [X] Abillity to create an account
    - [X] Log in
@@ -25,7 +24,4 @@ A clone of tank tactics by Halfbrick Studios.
 ### Optional
 
  - [ ] General
-   - [ ] Do updates properly
    - [ ] Chat function
- - [ ] Account
-   - [ ] Email verification (Probably not doing that)

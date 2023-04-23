@@ -25,6 +25,8 @@ namespace Tanks
             app.MapTankEndpoints();
             app.MapJuryEndpoints();
 
+            Game.Schedule();
+
             app.Run();
         }
     }

@@ -39,7 +39,6 @@
         public Color Color { get; set; } = Color.Green;
         // Only use if MOVEMENT_RANGE should be ignored. Otherwise use Move()
         public Position Position { get; set; } = new(0, 0);
-        public bool HasVoted { get; set; } = new();
 
         public Tank(int id)
         {
