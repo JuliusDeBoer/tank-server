@@ -22,42 +22,8 @@ namespace Tanks.Models
         }
     }
 
-    static class JwtAuthenticator
-    {
-        private const string Secret = "Conjuror1-Antivirus-Breeze-Gliding-Eats"; // DEBUG! REMOVE IN PRODUCTION
-        private static readonly SymmetricSecurityKey SecretKey = new(Encoding.ASCII.GetBytes(Secret));
-
-        private static readonly JwtSecurityTokenHandler Handler = new();
-
-        public static string CreateUserToken(string email)
-        {
-            SecurityTokenDescriptor descriptor = new()
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim("email", email)
-                }),
-                Expires = DateTime.MaxValue,
-                SigningCredentials = new SigningCredentials(SecretKey, SecurityAlgorithms.HmacSha512Signature)
-            };
-
-            SecurityToken token = Handler.CreateToken(descriptor);
-            return Handler.WriteToken(token);
-        }
-    }
-
     public static class AccountEndpoints
     {
-        private static string PasswordEnrypt(string password)
-        {
-            return Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                password: password!,
-                salt: new byte[] { 6, 9, 4, 2, 0 }, // Very secure(Dont steal!)
-                prf: KeyDerivationPrf.HMACSHA256,
-                iterationCount: 100000,
-                numBytesRequested: 256 / 8));
-        }
-
         public static void MapAccountEndpoints(this IEndpointRouteBuilder routes)
         {
             RouteGroupBuilder group = routes.MapGroup("/api/v1/account");
@@ -70,11 +36,11 @@ namespace Tanks.Models
                     return Response.BadRequest(Response.ERR_ACCOUNT_EXISTS);
                 }
 
-                string encrypted = PasswordEnrypt(password);
+                string encrypted = Game.Authenticator.Encrypt(password);
                 Game.CreateAccount(username, email, encrypted);
 
-                string token = JwtAuthenticator.CreateUserToken(email);
-                return (IResult)TypedResults.Created("/api/v1/account/login");
+                JwtResult token = Game.Authenticator.CreateUserToken(email);
+                return (IResult)TypedResults.Created($"/api/v1/account/login?email={email}&password={password}");
             })
             .WithName("CreateAccount");
 
@@ -87,9 +53,9 @@ namespace Tanks.Models
 
                 Account account = Game.Accounts[email];
 
-                if (account.Password == PasswordEnrypt(password))
+                if (account.Password == Game.Authenticator.Encrypt(password))
                 {
-                    string token = JwtAuthenticator.CreateUserToken(email);
+                    JwtResult token = Game.Authenticator.CreateUserToken(email);
                     return (IResult)TypedResults.Ok(token);
                 }
 

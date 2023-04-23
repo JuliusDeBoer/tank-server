@@ -5,6 +5,8 @@ namespace Tanks
 {
     public static class Game
     {
+        public static readonly Authenticator Authenticator = new();
+
         private static Dictionary<int, Models.Tank> PTanks { get; set; } = new Dictionary<int, Models.Tank>();
         private static readonly Mutex _tanksMutex = new();
         public static Dictionary<int, Models.Tank> Tanks
