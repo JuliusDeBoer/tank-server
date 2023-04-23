@@ -55,9 +55,18 @@
         {
             RouteGroupBuilder group = routes.MapGroup("/api/v1/jury");
 
-            group.MapGet("/", () =>
+            group.MapGet("/vote", (HttpContext context) =>
             {
-                //return Response.Ok(Game.JuryVotes);
+                var headers = context.Request.Headers;
+
+                Account? account = Game.Authenticator.GetUser(headers);
+
+                if(account == null)
+                {
+                    return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS);
+                }
+
+                return (IResult)TypedResults.Ok(account);
             })
             .WithName("GetJury");
         }

@@ -5,43 +5,8 @@ namespace Tanks
     public static class Game
     {
         public static readonly Authenticator Authenticator = new();
-
-        private static Dictionary<int, Models.Tank> PTanks { get; set; } = new Dictionary<int, Models.Tank>();
-        private static readonly Mutex _tanksMutex = new();
-        public static Dictionary<int, Models.Tank> Tanks
-        {
-            get
-            {
-                _tanksMutex.WaitOne();
-                Dictionary<int, Models.Tank> content = PTanks;
-                _tanksMutex.ReleaseMutex();
-                return content;
-            }
-            set
-            {
-                _tanksMutex.WaitOne();
-                PTanks = value;
-                _tanksMutex.ReleaseMutex();
-            }
-        }
-        private static Dictionary<string, Account> PAccounts { get; set; } = new Dictionary<string, Account>();
-        private static readonly Mutex _accountsMutex = new();
-        public static Dictionary<string, Account> Accounts
-        {
-            get
-            {
-                _accountsMutex.WaitOne();
-                Dictionary<string, Account> content = PAccounts;
-                _accountsMutex.ReleaseMutex();
-                return content;
-            }
-            set
-            {
-                _accountsMutex.WaitOne();
-                PAccounts = value;
-                _accountsMutex.ReleaseMutex();
-            }
-        }
+        public static Dictionary<int, Models.Tank> Tanks { get; set; } = new Dictionary<int, Models.Tank>();
+        public static Dictionary<string, Account> Accounts { get; set; } = new Dictionary<string, Account>();
 
         public static readonly Jury Jury = new();
 

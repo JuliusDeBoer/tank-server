@@ -2,10 +2,10 @@
 {
     public class Account
     {
-        public string Username;
-        public string Email;
-        public string Password;
-        public int TankId;
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public int TankId { get; set; }
 
         public Account(string username, string email, string password, int tankId)
         {
@@ -25,6 +25,11 @@
             // TODO: Create a algorith to get unique id
             group.MapPost("/create", (string username, string email, string password) =>
             {
+                if (username == null || email == null || password == null)
+                {
+                    return Response.BadRequest(Response.ERR_BAD_ARGUMENTS);
+                }
+
                 if (Game.Accounts.ContainsKey(email))
                 {
                     return Response.BadRequest(Response.ERR_ACCOUNT_EXISTS);

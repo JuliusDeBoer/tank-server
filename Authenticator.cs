@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Tanks.Models;
 
 namespace Tanks
 {
@@ -17,20 +18,76 @@ namespace Tanks
 
     public class Authenticator
     {
-        public string Secret = "Conjuror1-Antivirus-Breeze-Gliding-Eats"; // DEBUG! REMOVE IN PRODUCTION
-        private SymmetricSecurityKey SecretKey = new(new byte[] { 6, 9, 4, 2, 0 }); // VERY SECURE! DO NOT USE PLS!!!!
+        public string Secret;
+        private SymmetricSecurityKey SecretKey;
 
         private readonly JwtSecurityTokenHandler Handler = new();
+        private TokenValidationParameters validationParameters;
+
+        public Authenticator()
+        {
+            Secret = "Conjuror1-Antivirus-Breeze-Gliding-Eats";
+            SecretKey = new(Encoding.ASCII.GetBytes(Secret));
+            validationParameters = new()
+            {
+                ValidateLifetime = false,
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                IssuerSigningKey = SecretKey
+            };
+        }
 
         public void SetSecret(string secret)
         {
             Secret = secret;
             SecretKey = new(Encoding.ASCII.GetBytes(Secret));
+            validationParameters = new()
+            {
+                ValidateLifetime = false,
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                IssuerSigningKey = SecretKey
+            };
         }
 
-        public Authenticator()
+        public bool IsValid(string jwt)
         {
-            SecretKey = new(Encoding.ASCII.GetBytes(Secret));
+            // For some reason when the token is not valid it throws an exception
+            try
+            {
+                Handler.ValidateToken(jwt, validationParameters, out SecurityToken validatedToken);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public Account? GetUser(IHeaderDictionary headers)
+        {
+            string? token = headers["Authorization"];
+
+            if (token == null)
+            {
+                return null;
+            }
+
+            if (!IsValid(token))
+            {
+                return null;
+            }
+
+            JwtSecurityToken jwt = new(token);
+
+            string email = (string)jwt.Payload["email"];
+
+            if (!Game.Accounts.ContainsKey(email))
+            {
+                return null;
+            }
+
+            return Game.Accounts[email];
         }
 
         public JwtResult CreateUserToken(string email)
