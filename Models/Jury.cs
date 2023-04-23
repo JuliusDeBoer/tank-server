@@ -1,20 +1,8 @@
 ﻿namespace Tanks.Models
 {
-    public class Candidate
-    {
-        public int Tank { get; set; }
-        public int Votes { get; set; }
-
-        public Candidate(int tank)
-        {
-            Tank = tank;
-            Votes = 0;
-        }
-    }
-
     public class Jury
     {
-        public Dictionary<int, Candidate> Candidates { get; private set; } = new();
+        public Dictionary<int, int> Candidates { get; private set; } = new();
         private List<int> Voters { get; set; } = new();
 
         public bool HasVoted(int voterId)
@@ -27,30 +15,48 @@
             Voters.Add(voterId);
             if (!Candidates.ContainsKey(candidateId))
             {
-                Candidates.Add(candidateId, new Candidate(candidateId));
+                Candidates.Add(candidateId, 0);
             }
             else
             {
-                Candidates[candidateId].Votes++;
+                Candidates[candidateId]++;
             }
+        }
+
+        public int? GetWinner()
+        {
+            if (Candidates.Count <= 0) { return null; }
+
+            int highest = 0;
+            foreach (KeyValuePair<int, int> candidate in Candidates)
+            {
+                if (candidate.Value >= highest)
+                {
+                    highest = candidate.Value;
+                }
+            }
+
+            // If there are multiple winners return null
+            foreach (KeyValuePair<int, int> candidate in Candidates)
+            {
+                if (candidate.Value >= highest)
+                {
+                    return null;
+                }
+            }
+
+            return highest;
+        }
+
+        public void Empty()
+        {
+            Candidates.Clear();
+            Voters.Clear();
         }
     }
 
     public static class JuryEndPoints
     {
-        //public class JuryVoteResultCollection
-        //{
-        //    public List<Tank> Tanks { get; set; } = new List<Tank>();
-
-        //    public TankTotal(Dictionary<int, Tank> tanks)
-        //    {
-        //        foreach (KeyValuePair<int, Tank> pair in tanks)
-        //        {
-        //            Tanks.Add(pair.Value);
-        //            Total++;
-        //        }
-        //    }
-
         public static void MapJuryEndpoints(this IEndpointRouteBuilder routes)
         {
             RouteGroupBuilder group = routes.MapGroup("/api/v1/jury");
@@ -60,7 +66,7 @@
                 IHeaderDictionary headers = context.Request.Headers;
                 Account? account = Game.Authenticator.GetUser(headers);
 
-                if(account == null)
+                if (account == null)
                 {
                     return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS);
                 }
