@@ -1,12 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
-using System;
-using System.Numerics;
-using System.Runtime.Serialization.Formatters;
-using System.Security.Cryptography;
-using System.Text.RegularExpressions;
-
-namespace Tanks.Models
+﻿namespace Tanks.Models
 {
     public enum Color
     {
@@ -46,13 +38,14 @@ namespace Tanks.Models
 #endif
         public Color Color { get; set; } = Color.Green;
         // Only use if MOVEMENT_RANGE should be ignored. Otherwise use Move()
-        public Position Position { get; set; } = new Position(0, 0);
+        public Position Position { get; set; } = new(0, 0);
+        public bool HasVoted { get; set; } = new();
 
         public Tank(int id)
         {
             Id = id;
         }
-        
+
         // Returns false if the tank has no action points left
         public bool SpendActionPoint()
         {
@@ -102,9 +95,10 @@ namespace Tanks.Models
     public static class TankEndpoints
     {
         public static readonly int MAX_TANKS = 255;
-        public static readonly int MAX_LEVEL = 3; 
+        public static readonly int MAX_LEVEL = 3;
 
-        public class TankTotal {
+        public class TankTotal
+        {
             public int Total { get; set; }
             public List<Tank> Tanks { get; set; } = new List<Tank>();
 
@@ -286,7 +280,7 @@ namespace Tanks.Models
 
             group.MapPost("/{id}/give", (int id, int amount, int target) =>
             {
-                if(amount <= 0)
+                if (amount <= 0)
                 {
                     return Response.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
@@ -304,7 +298,7 @@ namespace Tanks.Models
                 Tank origin = Game.Tanks[id];
                 Tank destination = Game.Tanks[target];
 
-                if(origin.Health <= 0)
+                if (origin.Health <= 0)
                 {
                     return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
@@ -315,7 +309,7 @@ namespace Tanks.Models
                 }
 
                 // Actually spend points
-                if(!origin.SpendActionPoint(amount))
+                if (!origin.SpendActionPoint(amount))
                 {
                     return Response.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
                 }

@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis.Elfie.Diagnostics;
-using Tanks.Models;
+﻿using Tanks.Models;
 
 namespace Tanks
 {
@@ -44,6 +43,8 @@ namespace Tanks
             }
         }
 
+        public static readonly Jury Jury = new();
+
         // Password must be hashed beforehand
         public static void CreateAccount(string username, string email, string password)
         {
@@ -57,7 +58,7 @@ namespace Tanks
         {
             foreach (KeyValuePair<int, Tank> pair in Tanks)
             {
-                if(pair.Value.Position == position)
+                if (pair.Value.Position == position)
                 {
                     return pair.Key;
                 }

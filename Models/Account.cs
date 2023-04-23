@@ -1,10 +1,4 @@
-﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-
-namespace Tanks.Models
+﻿namespace Tanks.Models
 {
     public class Account
     {
@@ -31,7 +25,7 @@ namespace Tanks.Models
             // TODO: Create a algorith to get unique id
             group.MapPost("/create", (string username, string email, string password) =>
             {
-                if(Game.Accounts.ContainsKey(email))
+                if (Game.Accounts.ContainsKey(email))
                 {
                     return Response.BadRequest(Response.ERR_ACCOUNT_EXISTS);
                 }
