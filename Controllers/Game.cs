@@ -1,6 +1,6 @@
 ﻿using TankServer.Models;
 
-namespace TankServer
+namespace TankServer.Controllers
 {
     public static class Game
     {
@@ -32,15 +32,13 @@ namespace TankServer
 
             int? result = Jury.GetWinner();
 
-            if(result != null)
+            if (result != null)
             {
                 Tanks.AllTanks[(int)result].ActionPoints++;
             }
 
             Schedule();
         }
-
-        // Password must be hashed beforehand
         public static void CreateAccount(string username, string email, string password)
         {
             int id = Tanks.New();

@@ -5,7 +5,7 @@ using System.Security.Claims;
 using System.Text;
 using TankServer.Models;
 
-namespace TankServer
+namespace TankServer.Controllers
 {
     public class JwtResult
     {

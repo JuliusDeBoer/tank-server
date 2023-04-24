@@ -1,4 +1,4 @@
-﻿namespace TankServer
+﻿namespace TankServer.Controllers
 {
     public class Response
     {

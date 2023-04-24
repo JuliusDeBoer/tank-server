@@ -15,6 +15,7 @@ A clone of tank tactics by Halfbrick Studios.
    - [X] Gifting points
    - [ ] Dont use dead tanks
    - [ ] Implement SingalR
+   - [ ] Move a lot of stuff from the controller to the model
  - [X] Jury
    - [X] Letting people vote
  - [X] Account

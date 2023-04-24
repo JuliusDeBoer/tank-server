@@ -54,26 +54,4 @@
             Voters.Clear();
         }
     }
-
-    public static class JuryEndPoints
-    {
-        public static void MapJuryEndpoints(this IEndpointRouteBuilder routes)
-        {
-            RouteGroupBuilder group = routes.MapGroup("/api/v1/jury");
-
-            group.MapPost("/vote", (HttpContext context) =>
-            {
-                IHeaderDictionary headers = context.Request.Headers;
-                Account? account = Game.Authenticator.GetUser(headers);
-
-                if (account == null)
-                {
-                    return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS);
-                }
-
-                return (IResult)TypedResults.Ok(account);
-            })
-            .WithName("GetJury");
-        }
-    }
 }
