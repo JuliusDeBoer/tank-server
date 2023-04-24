@@ -1,4 +1,4 @@
-﻿namespace Tanks
+﻿namespace TankServer
 {
     public static class Log
     {

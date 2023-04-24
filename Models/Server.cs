@@ -1,4 +1,4 @@
-﻿namespace Tanks.Models
+﻿namespace TankServer.Models
 {
     public class ServerInfo
     {
