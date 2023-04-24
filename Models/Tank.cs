@@ -1,6 +1,4 @@
-﻿using System.Security.Principal;
-
-namespace TankServer.Models
+﻿namespace TankServer.Models
 {
     public enum Color
     {
@@ -26,73 +24,10 @@ namespace TankServer.Models
         }
     }
 
-    public class Tanks
+    public class Tank
     {
         public const int MOVEMENT_RANGE = 4;
 
-        public Dictionary<int, Tank> AllTanks = new();
-
-        public int GetUniqueId()
-        {
-            int id = 1;
-            while (AllTanks.ContainsKey(id))
-            {
-                id++;
-            }
-
-            return id;
-        }
-
-        public int New()
-        {
-            return Add(new Tank(GetUniqueId()));
-        }
-
-        public int Add(Tank tank)
-        {
-            AllTanks.Add(tank.Id, tank);
-            return tank.Id;
-        }
-
-        public bool Move(int tankId, int x, int y)
-        {
-            Tank tank = AllTanks[tankId];
-
-            if (!((MOVEMENT_RANGE * -1) <= x && x <= MOVEMENT_RANGE && (MOVEMENT_RANGE * -1) <= y && y <= MOVEMENT_RANGE))
-            {
-                return false;
-            }
-
-            tank.Position.X += x;
-            tank.Position.Y += y;
-
-            return true;
-        }
-
-        public bool Contains(int id)
-        {
-            return AllTanks.ContainsKey(id);
-        }
-
-        public bool HasActionPoints(int id, int amount)
-        {
-            return AllTanks[id].ActionPoints >= amount;
-        }
-
-        public void SpendActionPoints(int id, int amount)
-        {
-            AllTanks[id].ActionPoints -= amount;
-        }
-
-        internal void GiveActionPoints(int from, int to, int amount)
-        {
-            AllTanks[from].ActionPoints -= amount;
-            AllTanks[to].ActionPoints += amount;
-        }
-    }
-
-    public class Tank
-    {
         public int Id { get; set; }
         public int Health { get; set; } = 3;
         public int Level { get; set; } = 1;
@@ -108,6 +43,51 @@ namespace TankServer.Models
         public Tank(int id)
         {
             Id = id;
+        }
+
+        // Returns false if the tank has no action points left
+        public bool SpendActionPoint()
+        {
+            if (ActionPoints <= 0)
+            {
+                return false;
+            }
+
+            ActionPoints--;
+            return true;
+        }
+
+        // Returns false if the tank has not enough action points
+        public bool SpendActionPoint(int amount)
+        {
+            if (ActionPoints < amount)
+            {
+                return false;
+            }
+
+            ActionPoints -= amount;
+            return true;
+        }
+
+        // Returns false if move was invalid
+        public bool Move(int x, int y)
+        {
+            // Dont have enough action points
+            if (!SpendActionPoint())
+            {
+                return false;
+            }
+
+            // Check if specified move is within range
+            if (!((MOVEMENT_RANGE * -1) <= x && x <= MOVEMENT_RANGE && (MOVEMENT_RANGE * -1) <= y && y <= MOVEMENT_RANGE))
+            {
+                return false;
+            }
+
+            Position.X += x;
+            Position.Y += y;
+
+            return true;
         }
     }
 
@@ -153,20 +133,20 @@ namespace TankServer.Models
 
             group.MapGet("/", () =>
             {
-                Log.Info("Requested all tanks");
-                return new TankTotal(Game.Tanks.AllTanks);
+                Log.Info("Requested all PTanks");
+                return new TankTotal(Game.Tanks);
             })
             .WithName("GetAllTanks");
 
             group.MapGet("/{id}", (int id) =>
             {
-                if (!Game.Tanks.Contains(id))
+                if (!Game.Tanks.ContainsKey(id))
                 {
                     Log.Error($"Attempted to get tank with id: {id}. Which doesn't exist");
                     return (IResult)TypedResults.NotFound(new Response("ERR_NO_TANK_FOUND", "Tank does not exist"));
                 }
                 Log.Info($"Got tank {id}");
-                return (IResult)TypedResults.Ok(Game.Tanks.AllTanks[id]);
+                return (IResult)TypedResults.Ok(Game.Tanks[id]);
             })
             .WithName("GetTankById");
 
@@ -189,7 +169,7 @@ namespace TankServer.Models
                 // TODO: Refactor this
                 try
                 {
-                    if (!Game.Tanks.Move(id, (int)x, (int)y))
+                    if (!Game.Tanks[id].Move((int)x, (int)y))
                     {
                         Log.Error(new Response("ERR_NOT_IMPLEMENTED", "Unable to move tank"));
                         return (IResult)TypedResults.BadRequest(new Response("ERR_NOT_IMPLEMENTED", "Unable to move tank"));
@@ -216,7 +196,7 @@ namespace TankServer.Models
 
                 int id = account.TankId;
 
-                if (!Game.Tanks.Contains(id))
+                if (!Game.Tanks.ContainsKey(id))
                 {
                     return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
@@ -228,7 +208,7 @@ namespace TankServer.Models
                     return Response.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
 
-                Game.Tanks.AllTanks[id].Color = (Color)parsed;
+                Game.Tanks[id].Color = (Color)parsed;
 
                 return Response.Ok(Response.OK);
             });
@@ -244,18 +224,18 @@ namespace TankServer.Models
 
                 int id = account.TankId;
 
-                if (!Game.Tanks.Contains(id))
+                if (!Game.Tanks.ContainsKey(id))
                 {
                     return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
-                if (!Game.Tanks.Contains(target))
+                if (!Game.Tanks.ContainsKey(target))
                 {
                     return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
-                Tank origin = Game.Tanks.AllTanks[id];
-                Tank dest = Game.Tanks.AllTanks[target];
+                Tank origin = Game.Tanks[id];
+                Tank dest = Game.Tanks[target];
 
                 if (origin.ActionPoints <= 0)
                 {
@@ -286,12 +266,12 @@ namespace TankServer.Models
 
                 int id = account.TankId;
 
-                if (!Game.Tanks.Contains(id))
+                if (!Game.Tanks.ContainsKey(id))
                 {
                     return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
-                Tank tank = Game.Tanks.AllTanks[id];
+                Tank tank = Game.Tanks[id];
 
                 if (tank.ActionPoints <= 0)
                 {
@@ -303,12 +283,10 @@ namespace TankServer.Models
                     return Response.BadRequest(Response.ERR_MAX_LEVEL_REACHED);
                 }
 
-                if (!Game.Tanks.HasActionPoints(id, 1))
+                if (!tank.SpendActionPoint())
                 {
                     return Response.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
                 }
-
-                Game.Tanks.SpendActionPoints(id, 1);
 
                 tank.Level++;
 
@@ -332,18 +310,18 @@ namespace TankServer.Models
                     return Response.BadRequest(Response.ERR_BAD_ARGUMENTS);
                 }
 
-                if (!Game.Tanks.Contains(id))
+                if (!Game.Tanks.ContainsKey(id))
                 {
                     return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
-                if (!Game.Tanks.Contains(target))
+                if (!Game.Tanks.ContainsKey(target))
                 {
                     return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
-                Tank origin = Game.Tanks.AllTanks[id];
-                Tank destination = Game.Tanks.AllTanks[target];
+                Tank origin = Game.Tanks[id];
+                Tank destination = Game.Tanks[target];
 
                 if (origin.Health <= 0)
                 {
@@ -356,13 +334,13 @@ namespace TankServer.Models
                 }
 
                 // Actually spend points
-                if (!Game.Tanks.HasActionPoints(id, amount))
+                if (!origin.SpendActionPoint(amount))
                 {
                     return Response.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
                 }
 
-                Game.Tanks.GiveActionPoints(id, target, amount);
-                
+                destination.ActionPoints += amount;
+
                 return Response.Ok(Response.OK);
             })
             .WithName("GiveActionPoint");

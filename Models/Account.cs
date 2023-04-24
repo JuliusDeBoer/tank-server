@@ -38,6 +38,7 @@
                 string encrypted = Game.Authenticator.Encrypt(password);
                 Game.CreateAccount(username, email, encrypted);
 
+                JwtResult token = Game.Authenticator.CreateUserToken(email);
                 return (IResult)TypedResults.Created($"/api/v1/account/login?email={email}&password={password}");
             })
             .WithName("CreateAccount");
