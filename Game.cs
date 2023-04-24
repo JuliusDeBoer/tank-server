@@ -5,7 +5,7 @@ namespace TankServer
     public static class Game
     {
         public static readonly Authenticator Authenticator = new();
-        public static Dictionary<int, Tank> Tanks { get; set; } = new Dictionary<int, Tank>();
+        public static readonly Tanks Tanks = new();
         public static Dictionary<string, Account> Accounts { get; set; } = new Dictionary<string, Account>();
 
         public static readonly Jury Jury = new();
@@ -22,7 +22,7 @@ namespace TankServer
 
         public static void Update(object? state)
         {
-            foreach (KeyValuePair<int, Tank> pair in Tanks)
+            foreach (KeyValuePair<int, Tank> pair in Tanks.AllTanks)
             {
                 if (pair.Value.Health >= 1)
                 {
@@ -34,7 +34,7 @@ namespace TankServer
 
             if(result != null)
             {
-                Tanks[(int)result].ActionPoints++;
+                Tanks.AllTanks[(int)result].ActionPoints++;
             }
 
             Schedule();
@@ -43,15 +43,13 @@ namespace TankServer
         // Password must be hashed beforehand
         public static void CreateAccount(string username, string email, string password)
         {
-            int id = Tanks.Count + 1;
-
-            Tanks.Add(id, new Tank(id));
+            int id = Tanks.New();
             Accounts.Add(email, new Account(username, email, password, id));
         }
 
         public static int GetTankByPosition(Models.Position position)
         {
-            foreach (KeyValuePair<int, Tank> pair in Tanks)
+            foreach (KeyValuePair<int, Tank> pair in Tanks.AllTanks)
             {
                 if (pair.Value.Position == position)
                 {
