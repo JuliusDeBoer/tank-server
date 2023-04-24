@@ -3,9 +3,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Tanks.Models;
+using TankServer.Models;
 
-namespace Tanks
+namespace TankServer
 {
     public class JwtResult
     {

@@ -1,4 +1,4 @@
-# Tanks
+# Tanks Server
 
 A clone of tank tactics by Halfbrick Studios.
 

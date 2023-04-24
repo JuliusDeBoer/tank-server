@@ -1,6 +1,6 @@
-﻿using Tanks.Models;
+﻿using TankServer.Models;
 
-namespace Tanks
+namespace TankServer
 {
     public static class Game
     {
