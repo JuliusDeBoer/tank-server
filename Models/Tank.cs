@@ -1,4 +1,4 @@
-﻿namespace TankServer.Models
+﻿namespace Models
 {
     public class TankTotal
     {

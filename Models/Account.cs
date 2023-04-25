@@ -1,6 +1,4 @@
-﻿using TankServer.Controllers;
-
-namespace TankServer.Models
+﻿namespace Models
 {
     public class Account
     {

@@ -1,4 +1,4 @@
-﻿namespace TankServer.Controllers
+﻿namespace Models
 {
     public static class Log
     {
