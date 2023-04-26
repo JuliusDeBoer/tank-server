@@ -17,8 +17,8 @@ namespace Models
 
     public class Authenticator
     {
-        public string Secret;
-        private SymmetricSecurityKey SecretKey;
+        public string Secret { get; set; }
+        private SymmetricSecurityKey SecretKey { get; set; }
 
         private readonly JwtSecurityTokenHandler Handler = new();
         private TokenValidationParameters validationParameters;
