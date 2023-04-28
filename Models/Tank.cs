@@ -9,8 +9,11 @@
         {
             foreach (KeyValuePair<int, Tank> pair in tanks)
             {
-                Tanks.Add(pair.Value);
-                Total++;
+                if(pair.Value.Health >= 1)
+                {
+                    Tanks.Add(pair.Value);
+                    Total;
+                }
             }
         }
     }
