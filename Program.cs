@@ -12,6 +12,7 @@ namespace TankServer
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddSignalR();
 
             var app = builder.Build();
 
@@ -25,6 +26,7 @@ namespace TankServer
             app.MapAccountEndpoints();
             app.MapTankEndpoints();
             app.MapJuryEndpoints();
+            app.MapTankHubEndpoints();
 
             Game.Schedule();
 
