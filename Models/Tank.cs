@@ -20,14 +20,14 @@
 
     public enum Color
     {
-        Red,
-        Orange,
-        Yellow,
-        Green,
-        Blue,
-        Purple,
-        White,
-        Hotpink // Really cool and secret!
+        Red = 0,
+        Orange = 1,
+        Yellow = 2,
+        Green = 3,
+        Blue = 4,
+        Purple = 5,
+        White = 6,
+        Hotpink = 7 // Really cool and secret!
     }
 
     public class Position
