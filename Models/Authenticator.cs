@@ -63,10 +63,8 @@ namespace Models
             return true;
         }
 
-        public Account? GetUser(IHeaderDictionary headers)
+        public Account? GetUser(string token)
         {
-            string? token = headers["Authorization"];
-
             if (token == null)
             {
                 return null;

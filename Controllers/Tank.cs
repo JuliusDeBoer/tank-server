@@ -13,7 +13,7 @@ namespace Controllers
                 Log.Info("Requested all tanks");
                 return new TankTotal(Game.Tanks.AllTanks);
             })
-            .WithName("GetAllTanks");
+            .WithName("GetTanks");
 
             group.MapGet("/{id}", (int id) =>
             {
@@ -25,11 +25,11 @@ namespace Controllers
                 Log.Info($"Got tank {id}");
                 return (IResult)TypedResults.Ok(Game.Tanks.AllTanks[id]);
             })
-            .WithName("GetTankById");
+            .WithName("GetTank");
 
             group.MapPost("/move", (HttpContext context, int? x, int? y) =>
             {
-                Account? account = Game.Authenticator.GetUser(context.Request.Headers);
+                Account? account = Game.Authenticator.GetUser(context.Request.Headers["Authorization"]);
 
                 if (account == null)
                 {
@@ -48,8 +48,8 @@ namespace Controllers
                 {
                     if (!Game.Tanks.Move(id, (int)x, (int)y))
                     {
-                        Log.Error(new Response("ERR_NOT_IMPLEMENTED", "Unable to move tank"));
-                        return (IResult)TypedResults.BadRequest(new Response("ERR_NOT_IMPLEMENTED", "Unable to move tank"));
+                        Log.Error(new Response("ERR_CODE_NOT_IMPLEMENTED", "Unable to move tank"));
+                        return (IResult)TypedResults.BadRequest(new Response("ERR_CODE_NOT_IMPLEMENTED", "Unable to move tank"));
                     }
                     Log.Info($"Moved tank {id} {{x: {x}; y: {y}}}");
                 }
@@ -64,7 +64,7 @@ namespace Controllers
 
             group.MapPost("/color", (HttpContext context, string color) =>
             {
-                Account? account = Game.Authenticator.GetUser(context.Request.Headers);
+                Account? account = Game.Authenticator.GetUser(context.Request.Headers["Authorization"]);
 
                 if (account == null)
                 {
@@ -88,11 +88,12 @@ namespace Controllers
                 Game.Tanks.AllTanks[id].Color = (Color)parsed;
 
                 return Response.Ok(Response.OK);
-            });
+            })
+            .WithName("SetColor");
 
             group.MapPost("/shoot", (HttpContext context, int target) =>
             {
-                Account? account = Game.Authenticator.GetUser(context.Request.Headers);
+                Account? account = Game.Authenticator.GetUser(context.Request.Headers["Authorization"]);
 
                 if (account == null)
                 {
@@ -130,11 +131,11 @@ namespace Controllers
 
                 return TypedResults.Ok(Response.OK);
             })
-            .WithName("ShootTank");
+            .WithName("Shoot");
 
             group.MapPost("/upgrade", (HttpContext context) =>
             {
-                Account? account = Game.Authenticator.GetUser(context.Request.Headers);
+                Account? account = Game.Authenticator.GetUser(context.Request.Headers["Authorization"]);
 
                 if (account == null)
                 {
@@ -171,11 +172,12 @@ namespace Controllers
 
                 return Response.Ok(Response.OK);
             })
-            .WithName("UpgradeTank");
+            .WithName("Upgrade");
 
             group.MapPost("/give", (HttpContext context, int amount, int target) =>
             {
-                Account? account = Game.Authenticator.GetUser(context.Request.Headers);
+                // TODO: Header possibly null here. Catch this exception!
+                Account? account = Game.Authenticator.GetUser(context.Request.Headers["Authorization"]);
 
                 if (account == null)
                 {
@@ -222,7 +224,7 @@ namespace Controllers
 
                 return Response.Ok(Response.OK);
             })
-            .WithName("GiveActionPoint");
+            .WithName("Give");
         }
     }
 }

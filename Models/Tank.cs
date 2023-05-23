@@ -27,7 +27,7 @@
         Blue,
         Purple,
         White,
-        Hotpink // Developer only
+        Hotpink // Really cool and secret!
     }
 
     public class Position

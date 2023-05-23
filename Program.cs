@@ -27,7 +27,7 @@ namespace TankServer
             app.MapTankEndpoints();
             app.MapJuryEndpoints();
 
-            app.MapHub<TankHub>("/hub");
+            app.MapHub<MasterHub>("/api/v1/hub");
 
             Game.Schedule();
 
