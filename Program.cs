@@ -11,14 +11,16 @@ namespace TankServer
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            //builder.Services.AddControllers();
+            builder.Services.AddControllersWithViews();
             builder.Services.AddSignalR();
 
-            var app = builder.Build();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+
+            WebApplication app = builder.Build();
 
             // Configure the HTTP request pipeline.
-
-            app.UseAuthorization();
 
             app.MapControllers();
 
@@ -28,6 +30,12 @@ namespace TankServer
             app.MapJuryEndpoints();
 
             app.MapHub<MasterHub>("/api/v1/hub");
+
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
             Game.Schedule();
 
