@@ -78,7 +78,7 @@ namespace Controllers
                     return Response.BadRequest(Response.ERR_NO_SUCH_TANK);
                 }
 
-                Color? parsed = Tanks.ParseColor(color);
+                Color? parsed = TankCollection.ParseColor(color);
 
                 if (parsed == null)
                 {
@@ -156,7 +156,7 @@ namespace Controllers
                     return Response.BadRequest(Response.ERR_NOT_ENOUGH_ACTION_POINTS);
                 }
 
-                if (tank.Level >= Tanks.MAX_LEVEL)
+                if (tank.Level >= TankCollection.MAX_LEVEL)
                 {
                     return Response.BadRequest(Response.ERR_MAX_LEVEL_REACHED);
                 }

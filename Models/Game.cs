@@ -5,7 +5,7 @@ namespace Models
     public static class Game
     {
         public static readonly Authenticator Authenticator = new();
-        public static readonly Tanks Tanks = new();
+        public static readonly TankCollection Tanks = new();
         public static Dictionary<string, Account> Accounts { get; set; } = new Dictionary<string, Account>();
 
         public static readonly Jury Jury = new();

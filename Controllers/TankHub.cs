@@ -65,7 +65,7 @@ namespace Controllers
                 return;
             }
 
-            Color? parsed = Tanks.ParseColor(color);
+            Color? parsed = TankCollection.ParseColor(color);
 
             if (parsed == null)
             {
@@ -132,7 +132,7 @@ namespace Controllers
                 return;
             }
 
-            if (tank.Level >= Tanks.MAX_LEVEL)
+            if (tank.Level >= TankCollection.MAX_LEVEL)
             {
                 return;
             }

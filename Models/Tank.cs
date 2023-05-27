@@ -1,4 +1,6 @@
-﻿namespace Models
+﻿using System.Threading.Tasks;
+
+namespace Models
 {
     public class TankTotal
     {
@@ -42,10 +44,17 @@
         }
     }
 
-    public class Tanks
+    public class TankCollection
     {
         public static readonly int MAX_TANKS = 255;
         public static readonly int MAX_LEVEL = 3;
+
+        public static readonly int FIELD_WIDTH = 100;
+        public static readonly int FIELD_HEIGHT = 50;
+
+        public const int MOVEMENT_RANGE = 4;
+
+        public Dictionary<int, Tank> AllTanks = new();
 
         public static Color? ParseColor(string color)
         {
@@ -63,10 +72,6 @@
             };
         }
 
-        public const int MOVEMENT_RANGE = 4;
-
-        public Dictionary<int, Tank> AllTanks = new();
-
         public int GetUniqueId()
         {
             int id = 1;
@@ -80,7 +85,23 @@
 
         public int New()
         {
-            return Add(new Tank(GetUniqueId()));
+            Tank tank = new(GetUniqueId());
+            Random rand = new();
+
+            // Lets hope I'm lucky
+            for(int i = 0; i <= 1000; i++)
+            {
+                int x = rand.Next(FIELD_WIDTH + 1);
+                int y = rand.Next(FIELD_HEIGHT + 1);
+
+                if (!IsPosOccupied(x, y))
+                {
+                    tank.Position = new(x, y);
+                    break;
+                }
+            }
+
+            return Add(tank);
         }
 
         public int Add(Tank tank)
@@ -93,10 +114,21 @@
         {
             Tank tank = AllTanks[tankId];
 
+            // Check if movement is within range
             if (!((MOVEMENT_RANGE * -1) <= x && x <= MOVEMENT_RANGE && (MOVEMENT_RANGE * -1) <= y && y <= MOVEMENT_RANGE))
             {
                 return false;
             }
+
+            // Check if movement is outside of the field
+            if(tank.Position.X + x > FIELD_WIDTH
+                || tank.Position.Y + y > FIELD_HEIGHT
+                || tank.Position.X + x < 0
+                || tank.Position.Y + y < 0)
+            {
+                return false;
+            }
+
 
             tank.Position.X += x;
             tank.Position.Y += y;
@@ -107,6 +139,19 @@
         public bool Contains(int id)
         {
             return AllTanks.ContainsKey(id);
+        }
+
+        public bool IsPosOccupied(int x, int y)
+        {
+            foreach (KeyValuePair<int, Tank> pair in AllTanks)
+            {
+                if(pair.Value.Position.X == x
+                    && pair.Value.Position.Y == y)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public bool HasActionPoints(int id, int amount)
