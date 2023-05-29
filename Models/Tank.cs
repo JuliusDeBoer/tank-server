@@ -49,8 +49,8 @@ namespace Models
         public static readonly int MAX_TANKS = 255;
         public static readonly int MAX_LEVEL = 3;
 
-        public static readonly int FIELD_WIDTH = 100;
-        public static readonly int FIELD_HEIGHT = 50;
+        public static readonly int FIELD_WIDTH = 32;
+        public static readonly int FIELD_HEIGHT = 24;
 
         public const int MOVEMENT_RANGE = 4;
 
