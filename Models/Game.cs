@@ -39,10 +39,10 @@ namespace Models
 
             Schedule();
         }
-        public static void CreateAccount(string username, string email, string password)
+        public static void CreateAccount(string userName, string email, string password)
         {
-            int id = Tanks.New();
-            Accounts.Add(email, new Account(username, email, password, id));
+            int id = Tanks.New(userName);
+            Accounts.Add(email, new Account(email, password, id));
         }
 
         public static int GetTankByPosition(Models.Position position)

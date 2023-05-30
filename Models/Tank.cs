@@ -49,8 +49,8 @@ namespace Models
         public static readonly int MAX_TANKS = 255;
         public static readonly int MAX_LEVEL = 3;
 
-        public static readonly int FIELD_WIDTH = 32;
-        public static readonly int FIELD_HEIGHT = 24;
+        public static readonly int FIELD_WIDTH = 16;
+        public static readonly int FIELD_HEIGHT = 12;
 
         public const int MOVEMENT_RANGE = 4;
 
@@ -83,9 +83,9 @@ namespace Models
             return id;
         }
 
-        public int New()
+        public int New(string userName)
         {
-            Tank tank = new(GetUniqueId());
+            Tank tank = new(GetUniqueId(), userName);
             Random rand = new();
 
             // Lets hope I'm lucky
@@ -174,6 +174,7 @@ namespace Models
     public class Tank
     {
         public int Id { get; set; }
+        public string UserName { get; set; }
         public int Health { get; set; } = 3;
         public int Level { get; set; } = 1;
 #if DEBUG
@@ -185,9 +186,10 @@ namespace Models
         // Only use if MOVEMENT_RANGE should be ignored. Otherwise use Move()
         public Position Position { get; set; } = new(0, 0);
 
-        public Tank(int id)
+        public Tank(int id, string userName)
         {
             Id = id;
+            UserName = userName;
         }
     }
 }

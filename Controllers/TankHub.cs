@@ -187,6 +187,16 @@ namespace Controllers
 
         public string? Login(string email, string password)
         {
+            if(email == null)
+            {
+                return null;
+            }
+
+            if(password == null)
+            {
+                return null;
+            }
+
             if (!Game.Accounts.ContainsKey(email))
             {
                 return null;
