@@ -1,5 +1,6 @@
 ﻿using Models;
 using Controllers;
+using System.Configuration;
 
 namespace TankServer
 {
@@ -7,12 +8,11 @@ namespace TankServer
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            //builder.UseUrls("http://localhost:6666");
 
-            //builder.Services.AddControllers();
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllers();
             builder.Services.AddSignalR();
 
             builder.Services.AddEndpointsApiExplorer();

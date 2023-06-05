@@ -1,9 +1,20 @@
 ﻿using Models;
+using System.Security.Policy;
 
 namespace Controllers
 {
     public static class TankEndpoints
     {
+        private class IdResponse
+        {
+            public int Id { get; set; }
+
+            public IdResponse(int id)
+            {
+                Id = id;
+            }
+        }
+
         public static void MapTankEndpoints(this IEndpointRouteBuilder routes)
         {
             RouteGroupBuilder group = routes.MapGroup("/api/v1/tank");
@@ -225,6 +236,19 @@ namespace Controllers
                 return Response.Ok(Response.OK);
             })
             .WithName("Give");
+
+            group.MapGet("/mine", (HttpContext context) =>
+            {
+                Account? account = Game.Authenticator.GetUser(context.Request.Headers["Authorization"]);
+
+                if (account == null)
+                {
+                    return Response.BadRequest(Response.ERR_INVALID_CREDENTIALS);
+                }
+
+                return TypedResults.Ok(new IdResponse(account.TankId));
+            })
+            .WithName("GetMyTankId");
         }
     }
 }

@@ -171,6 +171,18 @@ namespace Controllers
             Game.Tanks.GiveActionPoints(id, target, amount);
         }
 
+        public int GetMyTankId(string auth)
+        {
+
+            Account? account = Game.Authenticator.GetUser(auth);
+            if (account == null)
+            {
+                return -1;
+            }
+
+            return account.TankId;
+        }
+
         // === TANK END ===
 
         // === ACCOUNT START ===
