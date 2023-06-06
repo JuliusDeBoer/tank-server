@@ -115,6 +115,8 @@ namespace Controllers
             // TODO: Add funcion for this
             origin.ActionPoints--;
             dest.Health--;
+
+            Clients.All.SendAsync("TankShot", target);
         }
 
         public void Upgrade(string auth)

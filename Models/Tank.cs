@@ -182,7 +182,7 @@ namespace Models
 #else
         public int ActionPoints { get; set; } = 0;
 #endif
-        public Color Color { get; set; } = Color.Green;
+        public Color Color { get; set; } = Color.Red;
         // Only use if MOVEMENT_RANGE should be ignored. Otherwise use Move()
         public Position Position { get; set; } = new(0, 0);
 
