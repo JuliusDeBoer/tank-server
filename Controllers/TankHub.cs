@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Models;
+using System.Security.Cryptography.Xml;
 
 namespace Controllers
 {
@@ -47,7 +48,14 @@ namespace Controllers
                 return;
             }
 
+            Position original = new(Game.Tanks.AllTanks[account.TankId].Position.X, Game.Tanks.AllTanks[account.TankId].Position.Y);
+
+            Game.Tanks.SpendActionPoints(account.TankId, 1);
+
             Game.Tanks.Move(account.TankId, x, y);
+
+            // Id, Original position, new position
+            Clients.All.SendAsync("TankMoved", account.TankId, original, Game.Tanks.AllTanks[account.TankId].Position);
         }
 
         public void SetColor(string auth, string color)
