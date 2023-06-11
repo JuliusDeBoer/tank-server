@@ -51,7 +51,7 @@ namespace Models
 
         public bool IsValid(string jwt)
         {
-            // For some reason when the token is not valid it throws an exception
+            // For some reason when the token is not valid it throws an exception. WHY
             try
             {
                 Handler.ValidateToken(jwt, validationParameters, out SecurityToken validatedToken);

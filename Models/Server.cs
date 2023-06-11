@@ -1,6 +1,6 @@
 ﻿namespace Models
 {
-    // This server no purpose. Its fun though
+    // This serves no purpose. Its fun though
     public class ServerInfo
     {
         private static ServerInfo? _serverInfo;
